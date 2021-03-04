@@ -35,17 +35,17 @@ namespace Mirage
     /// </remarks>
     public interface IRunOnceEvent
     {
-        void AddHandler(UnityAction handler);
+        void AddListener(UnityAction handler);
     }
 
     [Serializable]
     public sealed class RunOnceEvent : RunOnceEventBase, IRunOnceEvent
     {
-        [SerializeField] UnityEvent innerEvent;
+        [SerializeField] UnityEvent _event;
 
-        protected override UnityEventBase baseEvent => innerEvent;
+        protected override UnityEventBase baseEvent => _event;
 
-        public void AddHandler(UnityAction handler)
+        public void AddListener(UnityAction handler)
         {
             if (hasInvoked)
             {
@@ -53,7 +53,7 @@ namespace Mirage
             }
             else
             {
-                innerEvent.AddListener(handler);
+                _event.AddListener(handler);
             }
         }
 
@@ -61,7 +61,7 @@ namespace Mirage
         {
             MarkInvoked();
 
-            innerEvent.Invoke();
+            _event.Invoke();
         }
     }
 
