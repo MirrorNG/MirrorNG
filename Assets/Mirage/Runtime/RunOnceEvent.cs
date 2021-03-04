@@ -28,7 +28,7 @@ namespace Mirage
     }
 
     /// <summary>
-    /// Event that can only run once, adding handler late will invoke right away
+    /// Event that can only run once, adding handler late will it invoke right away
     /// </summary>
     /// <remarks>
     /// Interface only contains AddHandler method because Invoke should only be called from the owner of the event
@@ -38,10 +38,13 @@ namespace Mirage
         void AddListener(UnityAction handler);
     }
 
+    /// <summary>
+    /// Event that can only run once, adding handler late will it invoke right away
+    /// </summary>
     [Serializable]
     public sealed class RunOnceEvent : RunOnceEventBase, IRunOnceEvent
     {
-        [SerializeField] UnityEvent _event;
+        [SerializeField] UnityEvent _event = new UnityEvent();
 
         protected override UnityEventBase baseEvent => _event;
 
@@ -66,25 +69,28 @@ namespace Mirage
     }
 
     /// <summary>
-    /// Event that can only run once, adding handler late will invoke right away
-    /// <para>
-    /// See <see cref="IRunOnceEvent"/> for more details
-    /// </para>
+    /// Version of <see cref="IRunOnceEvent"/> with 1 argument
     /// </summary>
     public interface IRunOnceEvent<T0>
     {
-        void AddHandler(UnityAction<T0> handler);
+        void AddListener(UnityAction<T0> handler);
     }
 
+    /// <summary>
+    /// Version of <see cref="RunOnceEvent"/> with 1 argument
+    /// <para>Create a non-generic class inheirting from this to use in inspector. Same rules as <see cref="UnityEvent"/></para>
+    /// </summary>
+    /// <typeparam name="T0"></typeparam>
     [Serializable]
-    public abstract class RunOnceEvent<T0> : RunOnceEventBase, IRunOnceEvent<T0>
+    public abstract class RunOnceEvent<T0, TEvent> : RunOnceEventBase, IRunOnceEvent<T0>
+        where TEvent : UnityEvent<T0>, new()
     {
-        [SerializeField] UnityEvent<T0> innerEvent;
-        protected override UnityEventBase baseEvent => innerEvent;
+        [SerializeField] TEvent _event = new TEvent();
+        protected override UnityEventBase baseEvent => _event;
 
         T0 arg0;
 
-        public void AddHandler(UnityAction<T0> handler)
+        public void AddListener(UnityAction<T0> handler)
         {
             if (hasInvoked)
             {
@@ -92,7 +98,7 @@ namespace Mirage
             }
             else
             {
-                innerEvent.AddListener(handler);
+                _event.AddListener(handler);
             }
         }
 
@@ -101,30 +107,35 @@ namespace Mirage
             MarkInvoked();
 
             this.arg0 = arg0;
-            innerEvent.Invoke(arg0);
+            _event.Invoke(arg0);
         }
     }
 
     /// <summary>
-    /// Event that can only run once, adding handler late will invoke right away
-    /// <para>
-    /// See <see cref="IRunOnceEvent"/> for more details
-    /// </para>
+    /// Version of <see cref="IRunOnceEvent"/> with 2 arguments
     /// </summary>
     public interface IRunOnceEvent<T0, T1>
     {
-        void AddHandler(UnityAction<T0, T1> handler);
+        void AddListener(UnityAction<T0, T1> handler);
     }
+
+    /// <summary>
+    /// Version of <see cref="RunOnceEvent"/> with 2 arguments
+    /// <para>Create a non-generic class inheirting from this to use in inspector. Same rules as <see cref="UnityEvent"/></para>
+    /// </summary>
+    /// <typeparam name="T0"></typeparam>
+    /// <typeparam name="T1"></typeparam>
     [Serializable]
-    public abstract class RunOnceEvent<T0, T1> : RunOnceEventBase, IRunOnceEvent<T0, T1>
+    public abstract class RunOnceEvent<T0, T1, TEvent> : RunOnceEventBase, IRunOnceEvent<T0, T1>
+        where TEvent : UnityEvent<T0, T1>, new()
     {
-        [SerializeField] UnityEvent<T0, T1> innerEvent;
-        protected override UnityEventBase baseEvent => innerEvent;
+        [SerializeField] TEvent _event = new TEvent();
+        protected override UnityEventBase baseEvent => _event;
 
         T0 arg0;
         T1 arg1;
 
-        public void AddHandler(UnityAction<T0, T1> handler)
+        public void AddListener(UnityAction<T0, T1> handler)
         {
             if (hasInvoked)
             {
@@ -132,7 +143,7 @@ namespace Mirage
             }
             else
             {
-                innerEvent.AddListener(handler);
+                _event.AddListener(handler);
             }
         }
 
@@ -142,7 +153,7 @@ namespace Mirage
 
             this.arg0 = arg0;
             this.arg1 = arg1;
-            innerEvent.Invoke(arg0, arg1);
+            _event.Invoke(arg0, arg1);
         }
     }
 }
