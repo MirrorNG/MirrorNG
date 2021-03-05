@@ -1,54 +1,65 @@
 # General Overview
 
-Mirage’s multiplayer High Level API (HLAPI) is a system for building multiplayer capabilities for Unity games. It is built on top of the lower level transport real-time communication layer, and handles many of the common tasks that are required for multiplayer games. While the transport layer supports any kind of network topology, the HLAPI is a server authoritative system; although it allows one of the participants to be a client and the server at the same time, so no dedicated server process is required. Working in conjunction with the internet services, this allows multiplayer games to be played over the internet with little work from developers.
+Mirage is a high level multiplayer library for Unity games. The goal is to make it as easy as possible to add multiplayer to your game.
 
-The HLAPI is focused on ease of use and iterative development and provides useful functionality for multiplayer games, such as:
--   Message handlers
--   General purpose high performance serialization
--   Distributed object management
--   State synchronization
--   Network classes: Server, Client, Connection, etc
+Some of the key features of Mirage include:
+* Sending and receiving messages
+* State synchronization
+* Client/Server and host mode
 
-The HLAPI is built from a series of layers that add functionality:
+Mirage is made of 3 layers:
+<div class="mermaid">
+graph TD
+    Obj[\Object Layer/] --> Msg
+    Msg[\Message Layer/] --> Transport
+    Transport[\Transport Layer/]
+</div>
 
-![Network Layers](NetworkLayers.jpg)
+From the bottom up:
 
-## Server and Host
+## Transport Layer
 
-In Mirage’s High Level API (HLAPI) system, multiplayer games include:
--   **Server**  
-    A server is an instance of the game which all other players connect to when they want to play together. A server often manages various aspects of the game, such as keeping score, and transmit that data back to the client.
--   **Clients**  
-    Clients are instances of the game that usually connect from different computers to the server. Clients can connect over a local network, or online.
+The `Transport Layer` is concerned about sending and receiving bytes.  It has no knowledge of what it is sending.  There are several transport implementations.  The default transport in Mirage is KCP. 
 
-A client is an instance of the game that connects to the server, so that the person playing it can play the game with other people, who connect on their own clients.
+If you want to implement a transport, create a class that extends <xref:Mirage.Transport>.  It's primary responsibility is accepting and opening connections.
+You will also need to create a class that represents a connection by implementing <xref:Mirage.IConnection>
 
-The server might be either a “dedicated server”, or a “host server”.
--   **Dedicated server**  
-    This is an instance of the game that only runs to act as a server.
--   **Host server**  
-    When there is no dedicated server, one of the clients also plays the role of the server. This client is the “host server”. The host server creates a single instance of the game (called the host), which acts as both server and client.
+## Message Layer
 
-The diagram below represents three players in a multiplayer game. In this game, one client is also acting as host, which means the client itself is the “local client”. The local client connects to the host server, and both run on the same computer. The other two players are remote clients - that is, they are on different computers, connected to the host server.
+The message layer is concerned about sending and receiving [messages](../Guides/Communications/NetworkMessages.md)
 
-![This diagram shows two remote clients connected to a host.](NetworkHost.png)
+If you wish to use this funtionality, you will need to have a <xref:Mirage.NetworkClient> in the client and a <xref:Mirage.NetworkServer> for the server. These classes provide events you can subscribe to for the life cycle of connections.  A connection is an implementation of <xref:Mirage.INetworkConnection>, and can send and receive messages. 
 
-The host is a single instance of your game, acting as both server and client at the same time. The host uses a special kind of internal client for local client communication, while other clients are remote clients. The local client communicates with the server through direct function calls and message queues, because it is in the same process. It actually shares the Scene with the server. Remote clients communicate with the server over a regular network connection. When you use Mirage’s HLAPI, this is all handled automatically for you.
+## Object Layer
 
-One of the aims of the multiplayer system is for the code for local clients and remote clients to be the same, so that you only have to think about one type of client most of the time when developing your game. In most cases, Mirage handles this difference automatically, so you should rarely need to think about the difference between your code running on a local client or a remote client.
+This layer is the highest level layer,  the classes in this layer are concerned about [synchcronizing state](../Guides/Sync/index.md) between objects, as well as sending [RPC calls](../Guides/Communications/RemoteActions.md).
 
-## Instantiate and Spawn
+The client needs a <xref:Mirage.ClientObjectManager>,  the server needs a <xref:Mirage.ServerObjectManager>. It will spawn and destroy objects and keep the objects in the client in sync with the objects in the server
 
-When you make a single player game In Unity, you usually use the `GameObject.Instantiate` method to create new game objects at runtime. However, with a multiplayer system, the server itself must “spawn” game objects in order for them to be active within the networked game. When the server spawns game objects, it triggers the creation of game objects on connected clients. The spawning system manages the lifecycle of the game object, and synchronizes the state of the game object based on how you set the game object up.
+# Clients and Servers 
 
-For more details about networked instantiating and spawning, see documentation on Spawning [game objects](../Guides/GameObjects/index.md).
+Mirage supports 2 modes of operation which can work at the same time.
 
-## Players and Local Players
+## Host mode
 
-Mirage’s multiplayer HLAPI system handles player game objects differently to non-player game objects. When a new player joins the game (when a new client connects to the server), that player’s game object becomes a “local player” game object on the client of that player, and Mirage associates the player’s connection with the player’s game object. Mirage associates one player game object for each person playing the game, and routes networking commands to that individual game object. A player cannot invoke a command on another player’s game object, only their own.
+In host mode,  the server and client are running in the same application and share all networked objects.  There is a direct in-memory channel of communication between the <xref:Mirage.NetworkServer> and <xref:Mirage.NetworkClient>.  Since the objects are shared, there is no need to synchronize data.
 
-For more details, see documentation on Player [game objects](../Guides/GameObjects/index.md).
+Note that host mode bypasses the Transport Layer.
 
-## Authority
+## Client / Server mode
 
-Servers and clients can both manage a game object’s behavior. The concept of “authority” refers to how and where a game object is managed. Mirage’s HLAPI is based around “server authority” as the default state, where the Server has authority over all game objects. Player game objects are a special case and treated as having “local authority”. You may want to build your game using a different system of authority - for more details, see [Network Authority](../Guides/Authority.md).
+In this mode,  the client is connected to a separate server, which is normally in another machine and reachable through the network.
+
+In client / server mode, the objects are duplicated in the server and client.  For every networked object in the server, there is a corresponding object in the client with a matching network id.
+
+Note a server can be in both host mode as well as server for other clients.
+
+<div class="mermaid">
+graph LR
+    subgraph host["Host"]
+        Client["Local Client"] --- Server
+    end
+    Server --- Client1
+    Server --- Client2
+    Server --- Client3
+</div>

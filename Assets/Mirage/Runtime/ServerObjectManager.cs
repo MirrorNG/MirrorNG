@@ -68,7 +68,7 @@ namespace Mirage
                 Server.Authenticated.AddListener(OnAuthenticated);
                 Server.Stopped.AddListener(OnServerStopped);
 
-                if(NetworkSceneManager != null)
+                if (NetworkSceneManager != null)
                 {
                     NetworkSceneManager.ServerChangeScene.AddListener(OnServerChangeScene);
                     NetworkSceneManager.ServerSceneChanged.AddListener(OnServerSceneChanged);
@@ -135,34 +135,23 @@ namespace Mirage
 
         void SpawnOrActivate()
         {
-            // host mode?
-            if (Server.LocalClientActive)
-            {
-                // server scene was loaded. now spawn all the objects
-                ActivateHostScene();
-            }
-            // server-only mode?
-            else if (Server && Server.Active)
+            if (Server && Server.Active)
             {
                 SpawnObjects();
-            }
-        }
 
-        void StartedHost()
-        {
-            if (TryGetComponent(out ClientObjectManager ClientObjectManager))
-            {
-                ClientObjectManager.ServerObjectManager = this;
+                // host mode?
+                if (Server.LocalClientActive)
+                {
+                    StartHostClientObjects();
+                }
             }
         }
 
         /// <summary>
         /// Loops spawned collection for NetworkIdentieis that are not IsClient and calls StartClient().
         /// </summary>
-        internal void ActivateHostScene()
+        void StartHostClientObjects()
         {
-            SpawnObjects();
-
             foreach (NetworkIdentity identity in SpawnedObjects.Values)
             {
                 if (!identity.IsClient)
@@ -171,6 +160,14 @@ namespace Mirage
 
                     identity.StartClient();
                 }
+            }
+        }
+
+        void StartedHost()
+        {
+            if (TryGetComponent(out ClientObjectManager ClientObjectManager))
+            {
+                ClientObjectManager.ServerObjectManager = this;
             }
         }
 
@@ -702,15 +699,18 @@ namespace Mirage
 
         /// <summary>
         /// This causes NetworkIdentity objects in a scene to be spawned on a server.
-        /// <para>NetworkIdentity objects in a scene are disabled by default. Calling SpawnObjects() causes these scene objects to be enabled and spawned. It is like calling NetworkServer.Spawn() for each of them.</para>
+        /// <para>
+        ///     NetworkIdentity objects in a scene are disabled by default.
+        ///     Calling SpawnObjects() causes these scene objects to be enabled and spawned.
+        ///     It is like calling NetworkServer.Spawn() for each of them.
+        /// </para>
         /// </summary>
-        /// <param name="client">The client associated to the objects.</param>
-        /// <returns>Success if objects where spawned.</returns>
-        public bool SpawnObjects()
+        /// <exception cref="T:InvalidOperationException">Thrown when server is not active</exception>
+        public void SpawnObjects()
         {
             // only if server active
             if (!Server || !Server.Active)
-                return false;
+                throw new InvalidOperationException("Server was not active");
 
             NetworkIdentity[] identities = Resources.FindObjectsOfTypeAll<NetworkIdentity>();
             Array.Sort(identities, new NetworkIdentityComparer());
@@ -725,8 +725,6 @@ namespace Mirage
                     Spawn(identity.gameObject);
                 }
             }
-
-            return true;
         }
 
         /// <summary>

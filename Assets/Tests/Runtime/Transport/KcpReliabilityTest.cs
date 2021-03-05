@@ -30,7 +30,7 @@ namespace Mirage.Tests
         public IEnumerator TestSendingData() => UniTask.ToCoroutine(async () =>
         {
             // send 100 packets
-            for (byte i=0; i< 50; i ++)
+            for (byte i = 0; i < 50; i++)
             {
                 byte[] data = { i };
                 client.Send(data, 0, data.Length);
@@ -39,7 +39,7 @@ namespace Mirage.Tests
             // receive the packets,  they should come in the same order as received
             byte[] buffer = { 0 };
 
-            for (byte i=0; i< 50; i++)
+            for (byte i = 0; i < 50; i++)
             {
                 // wait for data
                 while (server.Receive(buffer) < 0)
@@ -59,7 +59,7 @@ namespace Mirage.Tests
             byte[] data = new byte[10000];
 
             // fill up with some data
-            for (int i = 0; i< data.Length; i++)
+            for (int i = 0; i < data.Length; i++)
             {
                 data[i] = (byte)(i & 0xFF);
             }

@@ -14,9 +14,9 @@ namespace Mirage.KCP
             if (seg1.Count != seg2.Count)
                 return false;
 
-            for (int i=0; i< seg1.Count; i++)
+            for (int i = 0; i < seg1.Count; i++)
             {
-                if (seg1.Array[i + seg1.Offset] != seg2.Array[i+seg2.Offset])                
+                if (seg1.Array[i + seg1.Offset] != seg2.Array[i + seg2.Offset])
                     return false;
             }
             return true;

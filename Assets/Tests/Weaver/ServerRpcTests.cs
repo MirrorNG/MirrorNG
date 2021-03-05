@@ -13,7 +13,7 @@ namespace Mirage.Weaver
         [Test]
         public void ServerRpcCantBeStatic()
         {
-            HasError("CmdCantBeStatic must not be static","System.Void ServerRpcTests.ServerRpcCantBeStatic.ServerRpcCantBeStatic::CmdCantBeStatic()");
+            HasError("CmdCantBeStatic must not be static", "System.Void ServerRpcTests.ServerRpcCantBeStatic.ServerRpcCantBeStatic::CmdCantBeStatic()");
         }
 
         [Test]
@@ -73,13 +73,13 @@ namespace Mirage.Weaver
         [Test]
         public void AbstractServerRpc()
         {
-            HasError("Abstract Rpcs are currently not supported, use virtual method instead","System.Void ServerRpcTests.AbstractServerRpc.AbstractServerRpc::CmdDoSomething()");
+            HasError("Abstract Rpcs are currently not supported, use virtual method instead", "System.Void ServerRpcTests.AbstractServerRpc.AbstractServerRpc::CmdDoSomething()");
         }
 
         [Test]
         public void OverrideAbstractServerRpc()
         {
-            HasError("Abstract Rpcs are currently not supported, use virtual method instead","System.Void ServerRpcTests.OverrideAbstractServerRpc.BaseBehaviour::CmdDoSomething()");
+            HasError("Abstract Rpcs are currently not supported, use virtual method instead", "System.Void ServerRpcTests.OverrideAbstractServerRpc.BaseBehaviour::CmdDoSomething()");
         }
 
         [Test]

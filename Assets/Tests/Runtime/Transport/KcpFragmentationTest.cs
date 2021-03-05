@@ -12,7 +12,7 @@ namespace Mirage.Tests
         private static byte[] MakeRandomData(int size)
         {
             byte[] data = new byte[size];
-            for (int i = 0; i< size; i++)
+            for (int i = 0; i < size; i++)
             {
                 data[i] = (byte)Random.Range(0, 255);
             }

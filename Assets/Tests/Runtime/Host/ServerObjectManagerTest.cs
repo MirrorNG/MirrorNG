@@ -119,7 +119,7 @@ namespace Mirage.Tests.Host
         [UnityTest]
         public IEnumerator DestroyAllSpawnedOnStopTest() => UniTask.ToCoroutine(async () =>
         {
-            GameObject spawnTestObj = new GameObject("testObj", typeof(NetworkIdentity));
+            var spawnTestObj = new GameObject("testObj", typeof(NetworkIdentity));
             serverObjectManager.Spawn(spawnTestObj);
 
             //1 is the player. should be 2 at this point

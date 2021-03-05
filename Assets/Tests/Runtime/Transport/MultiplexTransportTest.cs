@@ -55,7 +55,7 @@ namespace Mirage.Tests
         [Test]
         public void AcceptTransport1()
         {
-            var connectedDelegate = Substitute.For<UnityAction<IConnection>>();
+            UnityAction<IConnection> connectedDelegate = Substitute.For<UnityAction<IConnection>>();
 
             transport.Connected.AddListener(connectedDelegate);
             transport1.Connected.Invoke(conn1);
@@ -66,7 +66,7 @@ namespace Mirage.Tests
         [Test]
         public void AcceptTransport2()
         {
-            var connectedDelegate = Substitute.For<UnityAction<IConnection>>();
+            UnityAction<IConnection> connectedDelegate = Substitute.For<UnityAction<IConnection>>();
             transport.Connected.AddListener(connectedDelegate);
 
             transport2.Connected.Invoke(conn1);
@@ -77,7 +77,7 @@ namespace Mirage.Tests
         [Test]
         public void AcceptMultiple()
         {
-            var connectedDelegate = Substitute.For<UnityAction<IConnection>>();
+            UnityAction<IConnection> connectedDelegate = Substitute.For<UnityAction<IConnection>>();
             transport.Connected.AddListener(connectedDelegate);
 
             transport1.Connected.Invoke(conn1);
@@ -90,7 +90,7 @@ namespace Mirage.Tests
         [Test]
         public void AcceptUntilAllGone()
         {
-            var connectedDelegate = Substitute.For<UnityAction<IConnection>>();
+            UnityAction<IConnection> connectedDelegate = Substitute.For<UnityAction<IConnection>>();
             transport.Connected.AddListener(connectedDelegate);
 
             transport1.Connected.Invoke(conn1);
@@ -146,7 +146,7 @@ namespace Mirage.Tests
             transport1.Supported.Returns(false);
             transport2.Supported.Returns(false);
 
-            
+
             Assert.That(transport.Scheme, Is.Empty);
         }
 

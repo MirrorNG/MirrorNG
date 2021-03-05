@@ -2,90 +2,62 @@ using NUnit.Framework;
 
 namespace Mirage
 {
-    public class CustomAttrributeTest
+    public class CustomAttrributeDefaultValueTests
     {
         [Test]
-        public void SyncVarAttributeTest()
+        public void SyncVarHookDefaultsToEmpty()
         {
             var attrib = new SyncVarAttribute();
 
             Assert.That(string.IsNullOrEmpty(attrib.hook));
-
-            attrib.hook = "foo";
-
-            Assert.That(attrib.hook.Equals("foo"));
         }
 
         [Test]
-        public void ServerRpcAttributeTest()
+        public void ServerRpcDefaultsToReliable()
         {
             var attrib = new ServerRpcAttribute();
 
             Assert.That(attrib.channel == Channel.Reliable);
-
-            attrib.channel = Channel.Unreliable;
-
-            Assert.That(attrib.channel == Channel.Unreliable);
         }
 
         [Test]
-        public void ClientRPCAttributeTest()
+        public void ClientRPCDefaultsToReliable()
         {
             var attrib = new ClientRpcAttribute();
 
             Assert.That(attrib.channel == Channel.Reliable);
-
-            attrib.channel = Channel.Unreliable;
-
-            Assert.That(attrib.channel == Channel.Unreliable);
         }
 
         [Test]
-        public void ServerAttributeTest()
+        public void ServerDefaultsToError()
         {
             var attrib = new ServerAttribute();
 
             Assert.IsTrue(attrib.error);
-
-            attrib.error = false;
-
-            Assert.IsFalse(attrib.error);
         }
 
         [Test]
-        public void ClientAttributeTest()
+        public void ClientDefaultsToError()
         {
             var attrib = new ClientAttribute();
 
             Assert.IsTrue(attrib.error);
-
-            attrib.error = false;
-
-            Assert.IsFalse(attrib.error);
         }
 
         [Test]
-        public void HasAuthorityAttributeTest()
+        public void HasAuthorityDefaultsToError()
         {
             var attrib = new HasAuthorityAttribute();
 
             Assert.IsTrue(attrib.error);
-
-            attrib.error = false;
-
-            Assert.IsFalse(attrib.error);
         }
 
         [Test]
-        public void LocalPlayerAttributeTest()
+        public void LocalPlayerDefaultsToError()
         {
             var attrib = new LocalPlayerAttribute();
 
             Assert.IsTrue(attrib.error);
-
-            attrib.error = false;
-
-            Assert.IsFalse(attrib.error);
         }
     }
 }

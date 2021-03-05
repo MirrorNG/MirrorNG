@@ -1,7 +1,7 @@
 namespace Mirage.Tests
 {
 
-    public static class LocalConnections 
+    public static class LocalConnections
     {
         public static (NetworkConnection, NetworkConnection) PipedConnections()
         {

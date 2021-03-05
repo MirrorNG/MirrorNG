@@ -16,6 +16,18 @@ namespace Mirage.Examples.MultipleAdditiveScenes
 
         readonly List<Scene> subScenes = new List<Scene>();
 
+        /// <summary>
+        /// This is invoked when a server is started - including when a host is started.
+        /// <para>StartServer has multiple signatures, but they all cause this hook to be called.</para>
+        /// </summary>
+        public void Start()
+        {
+            Server.Started.AddListener(() => StartCoroutine(LoadSubScenes()));
+            Server.Authenticated.AddListener(OnServerAddPlayer);
+            Server.Stopped.AddListener(OnStopServer);
+            Client.Disconnected.AddListener(OnStopClient);
+        }
+
         #region Server System Callbacks
 
         /// <summary>
@@ -23,7 +35,7 @@ namespace Mirage.Examples.MultipleAdditiveScenes
         /// <para>The default implementation for this function creates a new player object from the playerPrefab.</para>
         /// </summary>
         /// <param name="conn">Connection from client.</param>
-        public void OnServerAddPlayer(NetworkConnection conn)
+        public void OnServerAddPlayer(INetworkConnection conn)
         {
             // This delay is really for the host player that loads too fast for the server to have subscene loaded
             StartCoroutine(AddPlayerDelayed(conn));
@@ -31,7 +43,7 @@ namespace Mirage.Examples.MultipleAdditiveScenes
 
         int playerId = 1;
 
-        IEnumerator AddPlayerDelayed(NetworkConnection conn)
+        IEnumerator AddPlayerDelayed(INetworkConnection conn)
         {
             yield return new WaitForSeconds(.5f);
             conn.Send(new SceneMessage { scenePath = gameScene, sceneOperation = SceneOperation.LoadAdditive });
@@ -51,14 +63,7 @@ namespace Mirage.Examples.MultipleAdditiveScenes
 
         #region Start & Stop Callbacks
 
-        /// <summary>
-        /// This is invoked when a server is started - including when a host is started.
-        /// <para>StartServer has multiple signatures, but they all cause this hook to be called.</para>
-        /// </summary>
-        public void OnStartServer()
-        {
-            StartCoroutine(LoadSubScenes());
-        }
+
 
         IEnumerator LoadSubScenes()
         {

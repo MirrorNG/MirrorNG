@@ -64,7 +64,7 @@ namespace Mirage.Weaver
                 return;
             }
 
-            if (md.Body.CodeSize> 0 && selector(md))
+            if (md.Body.CodeSize > 0 && selector(md))
             {
                 Collection<SequencePoint> sequencePoints = md.DebugInformation.SequencePoints;
 

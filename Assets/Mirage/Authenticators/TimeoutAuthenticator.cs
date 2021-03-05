@@ -42,7 +42,7 @@ namespace Mirage.Authenticators
         {
             pendingAuthentication.Add(conn);
             Authenticator.OnClientAuthenticate(conn);
-            
+
             if (Timeout > 0)
                 StartCoroutine(BeginAuthentication(conn));
         }

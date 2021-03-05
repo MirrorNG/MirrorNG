@@ -113,7 +113,7 @@ namespace Mirage.Tests.Host
             // wait for server to disconnect
             await UniTask.WaitUntil(() => !server.Active);
 
-            var mockListener = Substitute.For<UnityAction<string, SceneOperation>>();
+            UnityAction<string, SceneOperation> mockListener = Substitute.For<UnityAction<string, SceneOperation>>();
             sceneManager.ClientChangeScene.AddListener(mockListener);
             await StartHost();
 

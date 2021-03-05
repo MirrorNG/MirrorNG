@@ -37,68 +37,72 @@ namespace Mirage
     ///     The NetworkIdentity manages the dirty state of the NetworkBehaviours of the object.
     ///     When it discovers that NetworkBehaviours are dirty, it causes an update packet to be created and sent to clients.
     /// </para>
-    /// <para>
-    ///     The flow for serialization updates managed by the NetworkIdentity is:
+    /// 
     /// <list type="bullet">
-    ///     <item>
+    ///     <listheader><description>
+    ///         The flow for serialization updates managed by the NetworkIdentity is:
+    ///     </description></listheader>
+    ///     
+    ///     <item><description>
     ///         Each NetworkBehaviour has a dirty mask. This mask is available inside OnSerialize as syncVarDirtyBits
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         Each SyncVar in a NetworkBehaviour script is assigned a bit in the dirty mask.
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         Changing the value of SyncVars causes the bit for that SyncVar to be set in the dirty mask
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         Alternatively, calling SetDirtyBit() writes directly to the dirty mask
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         NetworkIdentity objects are checked on the server as part of it&apos;s update loop
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         If any NetworkBehaviours on a NetworkIdentity are dirty, then an UpdateVars packet is created for that object
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         The UpdateVars packet is populated by calling OnSerialize on each NetworkBehaviour on the object
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         NetworkBehaviours that are NOT dirty write a zero to the packet for their dirty bits
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         NetworkBehaviours that are dirty write their dirty mask, then the values for the SyncVars that have changed
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         If OnSerialize returns true for a NetworkBehaviour, the dirty mask is reset for that NetworkBehaviour,
     ///         so it will not send again until its value changes.
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         The UpdateVars packet is sent to ready clients that are observing the object
-    ///     </item>
+    ///     </description></item>
     /// </list>
-    /// </para>
-    /// <para>
-    ///     On the client:
+    /// 
     /// <list type="bullet">
-    ///     <item>
+    ///     <listheader><description>
+    ///         On the client:
+    ///     </description></listheader>
+    /// 
+    ///     <item><description>
     ///         an UpdateVars packet is received for an object
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         The OnDeserialize function is called for each NetworkBehaviour script on the object
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         Each NetworkBehaviour script on the object reads a dirty mask.
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         If the dirty mask for a NetworkBehaviour is zero, the OnDeserialize functions returns without reading any more
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         If the dirty mask is non-zero value, then the OnDeserialize function reads the values for the SyncVars that correspond to the dirty bits that are set
-    ///     </item>
-    ///     <item>
+    ///     </description></item>
+    ///     <item><description>
     ///         If there are SyncVar hook functions, those are invoked with the value read from the stream.
-    ///     </item>
+    ///     </description></item>
     /// </list>
-    /// </para>
     /// </remarks>
     [DisallowMultipleComponent]
     [AddComponentMenu("Network/NetworkIdentity")]
@@ -242,18 +246,18 @@ namespace Mirage
         /// <remarks>
         /// The AssetId trick:
         /// <list type="bullet">
-        ///     <item>
+        ///     <item><description>
         ///         Ideally we would have a serialized 'Guid m_AssetId' but Unity can't
         ///         serialize it because Guid's internal bytes are private
-        ///     </item>
-        ///     <item>
+        ///     </description></item>
+        ///     <item><description>
         ///         UNET used 'NetworkHash128' originally, with byte0, ..., byte16
         ///         which works, but it just unnecessary extra code
-        ///     </item>
-        ///     <item>
+        ///     </description></item>
+        ///     <item><description>
         ///         Using just the Guid string would work, but it's 32 chars long and
         ///         would then be sent over the network as 64 instead of 16 bytes
-        ///     </item>
+        ///     </description></item>
         /// </list>
         /// The solution is to serialize the string internally here and then
         /// use the real 'Guid' type for everything else via .assetId
@@ -721,12 +725,12 @@ namespace Mirage
         /// <summary>
         /// check if observer can be seen by connection.
         /// <list type="bullet">
-        ///     <item>
+        ///     <item><description>
         ///         returns visibility.OnCheckObserver
-        ///     </item>
-        ///     <item>
+        ///     </description></item>
+        ///     <item><description>
         ///         returns true if we have no NetworkVisibility, default objects are visible
-        ///     </item>
+        ///     </description></item>
         /// </list>
         /// </summary>
         /// <param name="conn"></param>
@@ -764,18 +768,18 @@ namespace Mirage
         /// paul: readstring bug prevention
         /// <see cref="https://issuetracker.unity3d.com/issues/unet-networkwriter-dot-write-causing-readstring-slash-readbytes-out-of-range-errors-in-clients"/>
         /// <list type="bullet">
-        ///     <item>
+        ///     <item><description>
         ///         OnSerialize writes componentData, barrier, componentData, barrier,componentData,...
-        ///     </item>
-        ///     <item>
+        ///     </description></item>
+        ///     <item><description>
         ///         OnDeserialize carefully extracts each data, then deserializes the barrier and check it
-        ///     </item>
-        ///     <item>
+        ///     </description></item>
+        ///     <item><description>
         ///         If we read too many or too few bytes,  the barrier is very unlikely to match
-        ///     </item>
-        ///     <item>
+        ///     </description></item>
+        ///     <item><description>
         ///         We can properly track down errors
-        ///     </item>
+        ///     </description></item>
         /// </list>
         /// </remarks>
         void OnSerializeSafely(NetworkBehaviour comp, NetworkWriter writer, bool initialState)
@@ -893,7 +897,7 @@ namespace Mirage
                     OnDeserializeSafely(components[index], reader, initialState);
                 }
             }
-           
+
         }
 
         /// <summary>

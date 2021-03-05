@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Mirage.Tests
 {
-    public class NetworkConnectionTest 
+    public class NetworkConnectionTest
     {
         private NetworkConnection connection;
         private byte[] serializedMessage;
@@ -219,7 +219,8 @@ namespace Mirage.Tests
 
             connection.SendNotify(data, 1);
 
-            Assert.That(lastSent, Is.EqualTo(new NotifyPacket {
+            Assert.That(lastSent, Is.EqualTo(new NotifyPacket
+            {
                 Sequence = 1,
                 ReceiveSequence = 100,
                 AckMask = 1

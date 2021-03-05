@@ -30,7 +30,8 @@ namespace Mirage
         {
             int id = GetId<T>();
 
-            if (messageTypes.TryGetValue(id, out Type type) && type != typeof(T)) {
+            if (messageTypes.TryGetValue(id, out Type type) && type != typeof(T))
+            {
                 throw new ArgumentException($"Message {typeof(T)} and {messageTypes[id]} have the same ID. Change the name of one of those messages");
             }
             messageTypes[id] = typeof(T);

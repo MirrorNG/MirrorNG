@@ -124,7 +124,7 @@ namespace Mirage.Tests.Host
         [Test]
         public void SpawnWithAssetId()
         {
-            Guid replacementGuid = Guid.NewGuid();
+            var replacementGuid = Guid.NewGuid();
             serverObjectManager.Spawn(gameObject, replacementGuid, server.LocalConnection);
             Assert.That(testIdentity.AssetId, Is.EqualTo(replacementGuid));
         }
@@ -218,9 +218,9 @@ namespace Mirage.Tests.Host
         [UnityTest]
         public IEnumerator DestroyOwnedObjectsTest() => UniTask.ToCoroutine(async () =>
         {
-            GameObject testObj1 = new GameObject();
-            GameObject testObj2 = new GameObject();
-            GameObject testObj3 = new GameObject();
+            var testObj1 = new GameObject();
+            var testObj2 = new GameObject();
+            var testObj3 = new GameObject();
 
             server.LocalConnection.AddOwnedObject(testObj1.AddComponent<NetworkIdentity>());
             server.LocalConnection.AddOwnedObject(testObj2.AddComponent<NetworkIdentity>());
@@ -257,7 +257,7 @@ namespace Mirage.Tests.Host
         [UnityTest]
         public IEnumerator ClientNotNullAfterSpawnInStarted() => UniTask.ToCoroutine(async () =>
         {
-                await AsyncUtil.WaitUntilWithTimeout(() => testIdentity.Client == client);
+            await AsyncUtil.WaitUntilWithTimeout(() => testIdentity.Client == client);
         });
     }
 }

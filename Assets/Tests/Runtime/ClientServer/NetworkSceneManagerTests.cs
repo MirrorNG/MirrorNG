@@ -71,7 +71,7 @@ namespace Mirage.Tests.ClientServer
 
             await AsyncUtil.WaitUntilWithTimeout(() => clientSceneManager.asyncOperation.isDone);
 
-            Assert.That(clientSceneManager.NetworkScenePath, Is.EqualTo("Assets/Mirror/Tests/Runtime/testScene.unity"));
+            Assert.That(clientSceneManager.ActiveScenePath, Is.EqualTo("Assets/Mirror/Tests/Runtime/testScene.unity"));
 
             func1.Received(1).Invoke(Arg.Any<string>(), Arg.Any<SceneOperation>());
         });
@@ -79,7 +79,7 @@ namespace Mirage.Tests.ClientServer
         [Test]
         public void NetworkSceneNameStringValueTest()
         {
-            Assert.That(clientSceneManager.NetworkScenePath.Equals(SceneManager.GetActiveScene().path));
+            Assert.That(clientSceneManager.ActiveScenePath.Equals(SceneManager.GetActiveScene().path));
         }
 
         [Test]

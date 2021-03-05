@@ -7,7 +7,7 @@ namespace Mirage.Tests
 
     public class MockTransport : Transport
     {
-        public override IEnumerable<string> Scheme => new []{"kcp"};
+        public override IEnumerable<string> Scheme => new[] { "kcp" };
 
         public override bool Supported => true;
 

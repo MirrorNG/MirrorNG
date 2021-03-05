@@ -118,7 +118,7 @@ namespace Mirage.Weaver
                     LoadDeclaredReaders(klass);
                 }
 
-                if (klass.GetCustomAttribute<NetworkMessageAttribute>()  != null)
+                if (klass.GetCustomAttribute<NetworkMessageAttribute>() != null)
                 {
                     readers.GetReadFunc(klass, null);
                     writers.GetWriteFunc(klass, null);
@@ -252,7 +252,7 @@ namespace Mirage.Weaver
             }
         }
 
-        void LoadDeclaredReaders( TypeDefinition klass)
+        void LoadDeclaredReaders(TypeDefinition klass)
         {
             // register all the reader in this class.  Skip the ones with wrong signature
             foreach (MethodDefinition method in klass.Methods)
@@ -280,7 +280,7 @@ namespace Mirage.Weaver
         {
             return module.AssemblyReferences.Any(assemblyReference =>
                 assemblyReference.Name == "Mirage.Editor"
-                ) ;
+                );
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace Mirage.Weaver
                 "InitReadWriters",
                 Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static);
 
-            ConstructorInfo attributeconstructor = typeof(RuntimeInitializeOnLoadMethodAttribute).GetConstructor(new [] { typeof(RuntimeInitializeLoadType)});
+            ConstructorInfo attributeconstructor = typeof(RuntimeInitializeOnLoadMethodAttribute).GetConstructor(new[] { typeof(RuntimeInitializeLoadType) });
 
             var customAttributeRef = new CustomAttribute(module.ImportReference(attributeconstructor));
             customAttributeRef.ConstructorArguments.Add(new CustomAttributeArgument(module.ImportReference<RuntimeInitializeLoadType>(), RuntimeInitializeLoadType.BeforeSceneLoad));

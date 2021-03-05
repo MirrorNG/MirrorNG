@@ -245,6 +245,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Client: {fileID: 69965671}
   NetworkSceneManager: {fileID: 69965674}
+  _spawned:
+    m_PersistentCalls:
+      m_Calls: []
+  _unSpawned:
+    m_PersistentCalls:
+      m_Calls: []
   spawnPrefabs:
   - {fileID: -7012348765844800875, guid: a104de86221e66a48832c222471d4f1e, type: 3}
   - {fileID: 114402732107420660, guid: 1f4d376d8ca693049abd1744e4c79fad, type: 3}
@@ -267,6 +273,7 @@ MonoBehaviour:
   ClientObjectManager: {fileID: 69965667}
   ServerObjectManager: {fileID: 69965675}
   PlayerPrefab: {fileID: 114402732107420660, guid: 1f4d376d8ca693049abd1744e4c79fad, type: 3}
+  AutoSpawn: 1
   startPositionIndex: 0
   startPositions:
   - {fileID: 733367780}
@@ -323,17 +330,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abe6be14204d94224a3e7cd99dd2ea73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  authenticator: {fileID: 0}
-  Connected:
-    m_PersistentCalls:
-      m_Calls: []
-  Authenticated:
-    m_PersistentCalls:
-      m_Calls: []
-  Disconnected:
-    m_PersistentCalls:
-      m_Calls: []
   Transport: {fileID: 69965673}
+  authenticator: {fileID: 0}
+  _connected:
+    m_PersistentCalls:
+      m_Calls: []
+  _authenticated:
+    m_PersistentCalls:
+      m_Calls: []
+  _disconnected:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &69965672
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -347,30 +354,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxConnections: 4
-  Started:
-    m_PersistentCalls:
-      m_Calls: []
-  Connected:
-    m_PersistentCalls:
-      m_Calls: []
-  Authenticated:
-    m_PersistentCalls:
-      m_Calls: []
-  Disconnected:
-    m_PersistentCalls:
-      m_Calls: []
-  Stopped:
-    m_PersistentCalls:
-      m_Calls: []
-  OnStartHost:
-    m_PersistentCalls:
-      m_Calls: []
-  OnStopHost:
-    m_PersistentCalls:
-      m_Calls: []
-  authenticator: {fileID: 0}
   Listening: 1
   Transport: {fileID: 69965673}
+  authenticator: {fileID: 0}
+  _started:
+    m_PersistentCalls:
+      m_Calls: []
+  _connected:
+    m_PersistentCalls:
+      m_Calls: []
+  _authenticated:
+    m_PersistentCalls:
+      m_Calls: []
+  _disconnected:
+    m_PersistentCalls:
+      m_Calls: []
+  _stopped:
+    m_PersistentCalls:
+      m_Calls: []
+  _onStartHost:
+    m_PersistentCalls:
+      m_Calls: []
+  _onStopHost:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &69965673
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -405,16 +412,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Client: {fileID: 69965671}
   Server: {fileID: 69965672}
-  ClientChangeScene:
+  DontDestroy: 0
+  _clientChangeScene:
     m_PersistentCalls:
       m_Calls: []
-  ClientSceneChanged:
+  _clientSceneChanged:
     m_PersistentCalls:
       m_Calls: []
-  ServerChangeScene:
+  _serverChangeScene:
     m_PersistentCalls:
       m_Calls: []
-  ServerSceneChanged:
+  _serverSceneChanged:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &69965675
@@ -431,6 +439,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Server: {fileID: 69965672}
   NetworkSceneManager: {fileID: 69965674}
+  _spawned:
+    m_PersistentCalls:
+      m_Calls: []
+  _unSpawned:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &69965676
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -444,25 +458,47 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Levels:
-  - Name: NetworkBehaviour
-    level: 2
-  - Name: ClientObjectManager
-    level: 2
-  - Name: NetworkIdentity
-    level: 2
-  - Name: NetworkSceneManager
-    level: 2
-  - Name: NetworkServer
-    level: 2
-  - Name: NetworkTime
-    level: 2
-  - Name: NetworkClient
-    level: 2
-  - Name: ServerObjectManager
-    level: 2
   - Name: PlayerSpawner
     level: 2
   - Name: RemoteCallHelper
+    level: 2
+  - Name: NetworkBehaviour
+    level: 2
+  - Name: NetworkSceneManager
+    level: 2
+  - Name: ServerObjectManager
+    level: 2
+  - Name: NetworkIdentity
+    level: 2
+  - Name: Reward
+    level: 2
+  - Name: NetworkClient
+    level: 2
+  - Name: NetworkTime
+    level: 2
+  - Name: ClientObjectManager
+    level: 2
+  - Name: NetworkServer
+    level: 2
+  - Name: NetworkSceneChecker
+    level: 2
+  - Name: NetworkProximityChecker
+    level: 2
+  - Name: NetworkAnimator
+    level: 2
+  - Name: ZoneHandler
+    level: 2
+  - Name: NetworkBehaviourInspector
+    level: 2
+  - Name: HeadlessFrameLimiter
+    level: 2
+  - Name: SyncPositionBehaviour
+    level: 0
+  - Name: SnapshotBuffer
+    level: 0
+  - Name: NetworkRigidbody
+    level: 2
+  - Name: AdditiveNetworkManager
     level: 2
   - Name: EnterPlayModeSettingsCheck
     level: 2
@@ -470,41 +506,17 @@ MonoBehaviour:
     level: 2
   - Name: NetworkConnection
     level: 2
-  - Name: NetworkReaderExtensions
-    level: 2
   - Name: NetworkWriterPool
+    level: 2
+  - Name: NetworkReaderExtensions
     level: 2
   - Name: NetworkReaderPool
     level: 2
   - Name: BasicAuthenticator
     level: 2
-  - Name: NetworkRigidbody
-    level: 2
-  - Name: NetworkProximityChecker
-    level: 2
-  - Name: NetworkAnimator
-    level: 2
-  - Name: NetworkSceneChecker
-    level: 2
-  - Name: Reward
-    level: 2
-  - Name: HeadlessFrameLimiter
-    level: 2
-  - Name: LogFactoryTests
-    level: 2
-  - Name: NetworkManager
-    level: 2
-  - Name: WeaverTests
-    level: 4
-  - Name: NetworkBehaviourInspector
+  - Name: SceneDrawer
     level: 2
   - Name: ChatWindow
-    level: 2
-  - Name: AdditiveNetworkManager
-    level: 2
-  - Name: ZoneHandler
-    level: 2
-  - Name: SceneDrawer
     level: 2
   - Name: NetworkDiscovery
     level: 2
@@ -512,8 +524,16 @@ MonoBehaviour:
     level: 2
   - Name: KcpConnection
     level: 2
+  - Name: LogFactoryTests
+    level: 2
+  - Name: NetworkManager
+    level: 2
+  - Name: WeaverTests
+    level: 4
   - Name: Tests
     level: 4
+  - Name: InterpolationTime
+    level: 0
 --- !u!1 &204334129
 GameObject:
   m_ObjectHideFlags: 0

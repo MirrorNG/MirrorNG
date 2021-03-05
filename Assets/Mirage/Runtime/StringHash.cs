@@ -2,8 +2,12 @@ namespace Mirage
 {
     public static class StringHash
     {
-        // string.GetHashCode is not guaranteed to be the same on all machines, but
-        // we need one that is the same on all machines. simple and stupid:
+        /// <summary>
+        /// Gets a hash for a string. This hash will be the same on all platforms 
+        /// </summary>
+        /// <remarks>
+        /// string.GetHashCode is not guaranteed to be the same on all platforms
+        /// </remarks>
         public static int GetStableHashCode(this string text)
         {
             unchecked

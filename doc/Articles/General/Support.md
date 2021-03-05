@@ -1,7 +1,7 @@
 # Support
 
 ## Discord
--   You can find us on [Discord](https://discord.gg/2BvnM4R).
+-   You can find us on [Discord](https://discord.gg/DTBPBYvexy).
 
 ## GitHub
 -   You can create an issue in [GitHub](https://github.com/MirageNet/Mirage/issues)

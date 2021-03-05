@@ -11,7 +11,7 @@ namespace Mirage.Tests.Host
     [TestFixture]
     public class ClientObjectManagerTest : HostSetup<MockComponent>
     {
-        GameObject playerReplacement;       
+        GameObject playerReplacement;
 
         [Test]
         public void OnSpawnAssetSceneIDFailureExceptionTest()
@@ -30,7 +30,7 @@ namespace Mirage.Tests.Host
         {
             var guid = Guid.NewGuid();
             var prefabObject = new GameObject("prefab", typeof(NetworkIdentity));
-            var identity = prefabObject.GetComponent<NetworkIdentity>();
+            NetworkIdentity identity = prefabObject.GetComponent<NetworkIdentity>();
 
             clientObjectManager.RegisterPrefab(identity, guid);
 
@@ -46,7 +46,7 @@ namespace Mirage.Tests.Host
         [Test]
         public void RegisterPrefabDelegateEmptyIdentityExceptionTest()
         {
-            GameObject prefabObject = new GameObject("prefab", typeof(NetworkIdentity));
+            var prefabObject = new GameObject("prefab", typeof(NetworkIdentity));
             NetworkIdentity identity = prefabObject.GetComponent<NetworkIdentity>();
             identity.AssetId = Guid.Empty;
 
@@ -61,7 +61,7 @@ namespace Mirage.Tests.Host
         [Test]
         public void RegisterPrefabDelegateTest()
         {
-            GameObject prefabObject = new GameObject("prefab", typeof(NetworkIdentity));
+            var prefabObject = new GameObject("prefab", typeof(NetworkIdentity));
             NetworkIdentity identity = prefabObject.GetComponent<NetworkIdentity>();
             identity.AssetId = Guid.NewGuid();
 
@@ -76,7 +76,7 @@ namespace Mirage.Tests.Host
         [Test]
         public void UnregisterPrefabTest()
         {
-            GameObject prefabObject = new GameObject("prefab", typeof(NetworkIdentity));
+            var prefabObject = new GameObject("prefab", typeof(NetworkIdentity));
             NetworkIdentity identity = prefabObject.GetComponent<NetworkIdentity>();
             identity.AssetId = Guid.NewGuid();
 
@@ -96,7 +96,7 @@ namespace Mirage.Tests.Host
         [Test]
         public void UnregisterSpawnHandlerTest()
         {
-            GameObject prefabObject = new GameObject("prefab", typeof(NetworkIdentity));
+            var prefabObject = new GameObject("prefab", typeof(NetworkIdentity));
             NetworkIdentity identity = prefabObject.GetComponent<NetworkIdentity>();
             identity.AssetId = Guid.NewGuid();
 
@@ -142,13 +142,13 @@ namespace Mirage.Tests.Host
         //Used to ensure the test has a unique non empty guid
         Guid GenerateUniqueGuid()
         {
-            Guid testGuid = Guid.NewGuid();
+            var testGuid = Guid.NewGuid();
 
             if (clientObjectManager.prefabs.ContainsKey(testGuid))
             {
                 testGuid = GenerateUniqueGuid();
             }
-            return testGuid;    
+            return testGuid;
         }
 
         [Test]
@@ -196,7 +196,7 @@ namespace Mirage.Tests.Host
             //Setup new scene object for test
             var guid = Guid.NewGuid();
             var prefabObject = new GameObject("prefab", typeof(NetworkIdentity));
-            var identity = prefabObject.GetComponent<NetworkIdentity>();
+            NetworkIdentity identity = prefabObject.GetComponent<NetworkIdentity>();
             identity.AssetId = guid;
             clientObjectManager.spawnableObjects.Add(0, identity);
 

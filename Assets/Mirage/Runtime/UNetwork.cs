@@ -14,7 +14,9 @@ namespace Mirage
         Current = 1
     }
 
-    // -- helpers for float conversion without allocations --
+    /// <summary>
+    /// Converts between uint and float without allocations
+    /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     internal struct UIntFloat
     {
@@ -25,6 +27,9 @@ namespace Mirage
         public uint intValue;
     }
 
+    /// <summary>
+    /// Converts between ulong and double without allocations
+    /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     internal struct UIntDouble
     {
@@ -35,6 +40,9 @@ namespace Mirage
         public ulong longValue;
     }
 
+    /// <summary>
+    /// Converts between ulong and decimal without allocations
+    /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     internal struct UIntDecimal
     {

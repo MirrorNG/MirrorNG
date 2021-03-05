@@ -13,12 +13,12 @@ namespace Mirage.Examples.Pong
         public override void OnServerAddPlayer(INetworkConnection conn)
         {
             // add player at correct spawn position
-            Transform start = Server.NumPlayers == 0 ? leftRacketSpawn : rightRacketSpawn;
+            Transform start = Server.NumberOfPlayers == 0 ? leftRacketSpawn : rightRacketSpawn;
             NetworkIdentity player = Instantiate(PlayerPrefab, start.position, start.rotation);
             ServerObjectManager.AddPlayerForConnection(conn, player.gameObject);
 
             // spawn ball if two players
-            if (Server.NumPlayers == 2)
+            if (Server.NumberOfPlayers == 2)
             {
                 ball = Instantiate(ballPrefab);
                 ServerObjectManager.Spawn(ball);

@@ -1,3 +1,83 @@
+# [71.0.0](https://github.com/MirageNet/Mirage/compare/v70.0.0...v71.0.0) (2021-03-05)
+
+
+### Styles
+
+* renaming NetworkScenePath to ActiveScenePath ([#647](https://github.com/MirageNet/Mirage/issues/647)) ([7a26360](https://github.com/MirageNet/Mirage/commit/7a26360b9d11e7d76ef73628f593503d0d785380))
+
+
+### BREAKING CHANGES
+
+* Use NetworkSceneManager.ActiveScenePath instead of NetworkSceneManager.NetworkScenePath
+
+* removing cref till docs are fixed
+
+# [70.0.0](https://github.com/MirageNet/Mirage/compare/v69.1.2...v70.0.0) (2021-03-04)
+
+
+### Code Refactoring
+
+* spawnobjects throws exception instead of returning false ([#639](https://github.com/MirageNet/Mirage/issues/639)) ([4cb8afb](https://github.com/MirageNet/Mirage/commit/4cb8afb6e33be80b1c2e5fa3db57a246be203b74))
+
+
+### BREAKING CHANGES
+
+* SpawnObjects throws Exception instead of returning false
+
+## [69.1.2](https://github.com/MirageNet/Mirage/compare/v69.1.1...v69.1.2) (2021-03-03)
+
+
+### Bug Fixes
+
+* **weaver:** adding missing errors when Attributes are used in monobehaviour ([64b580b](https://github.com/MirageNet/Mirage/commit/64b580bb15048e60ba96de843ba47ffdc1a9fd0b))
+
+## [69.1.1](https://github.com/MirageNet/Mirage/compare/v69.1.0...v69.1.1) (2021-03-02)
+
+
+### Bug Fixes
+
+* multi scene example nre and event errors ([#649](https://github.com/MirageNet/Mirage/issues/649)) ([8c4c352](https://github.com/MirageNet/Mirage/commit/8c4c352bd226e12324f851218d6a9d56be894662))
+
+# [69.1.0](https://github.com/MirageNet/Mirage/compare/v69.0.0...v69.1.0) (2021-03-02)
+
+
+### Features
+
+* adding assert extension method to logger ([#642](https://github.com/MirageNet/Mirage/issues/642)) ([1df6081](https://github.com/MirageNet/Mirage/commit/1df6081e5d1244a1f780b9945f5bd3c0a10387f0))
+
+# [69.0.0](https://github.com/MirageNet/Mirage/compare/v68.0.3...v69.0.0) (2021-03-02)
+
+
+### Styles
+
+* renaming NumPlayers to NumberOfPlayers ([#646](https://github.com/MirageNet/Mirage/issues/646)) ([27b99be](https://github.com/MirageNet/Mirage/commit/27b99be272ef4f6df73717d877385981e7565259))
+
+
+### BREAKING CHANGES
+
+* Use NetworkServer.NumberOfPlayers instead of NetworkServer.NumPlayers
+
+## [68.0.3](https://github.com/MirageNet/Mirage/compare/v68.0.2...v68.0.3) (2021-02-25)
+
+
+### Bug Fixes
+
+* welcome window layout ([#634](https://github.com/MirageNet/Mirage/issues/634)) ([2bceedb](https://github.com/MirageNet/Mirage/commit/2bceedb0baa0dd5d5767e440deea74077469fd11))
+
+## [68.0.2](https://github.com/MirageNet/Mirage/compare/v68.0.1...v68.0.2) (2021-02-24)
+
+
+### Bug Fixes
+
+* mirage icon missing in welcome window ([#637](https://github.com/MirageNet/Mirage/issues/637)) ([6c4dc9e](https://github.com/MirageNet/Mirage/commit/6c4dc9ee9639503631da43f74f92f0394fadab29))
+
+## [68.0.1](https://github.com/MirageNet/Mirage/compare/v68.0.0...v68.0.1) (2021-02-23)
+
+
+### Bug Fixes
+
+* welcome window icon not being found ([#635](https://github.com/MirageNet/Mirage/issues/635)) ([263a7b2](https://github.com/MirageNet/Mirage/commit/263a7b21c36357f8e6a7fa48f9ea74d1e6233216))
+
 # [68.0.0](https://github.com/MirageNet/Mirage/compare/v67.4.0...v68.0.0) (2021-02-22)
 
 

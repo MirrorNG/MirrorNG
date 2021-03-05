@@ -52,7 +52,7 @@ namespace Mirage
 
         // technically not an IPEndpoint,  will fix later
         public EndPoint GetEndPointAddress() => new IPEndPoint(IPAddress.Loopback, 0);
-        
+
         public async UniTask<int> ReceiveAsync(MemoryStream buffer)
         {
             // wait for a message

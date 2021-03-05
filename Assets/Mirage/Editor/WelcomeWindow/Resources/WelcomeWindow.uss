@@ -56,14 +56,17 @@
     padding-top: 0;
     flex: 3;
     white-space: normal;
+    flex-basis: auto;
+    flex-grow: 1;
 }
 
 #Spacer {
     display: flex;
     flex: 0.02;
+    flex-basis: auto;
 }
 
-Button {
+.navButton {
     padding: 2px;
     height: 35px;
 }
@@ -90,6 +93,8 @@ Button {
     flex: 1;
     flex-direction: column;
     padding-top: 3px;
+    flex-basis: 35%;
+    flex-shrink: 0;
 }
 
 #RightColumnBox {
@@ -97,6 +102,8 @@ Button {
     flex: 2;
     flex-direction: column;
     justify-content: space-between;
+    flex-basis: auto;
+    flex-grow: 1;
 }
 
 #Module {
@@ -108,17 +115,27 @@ Button {
 }
 
 .dark-selected-tab {
-    background-color: rgba(53, 53, 53, 255);
-    border-left-color: rgba(36, 36, 36, 255);
-    border-right-color: rgba(36, 36, 36, 255);
-    border-top-color: rgba(36, 36, 36, 255);
-    border-bottom-color: rgba(36, 36, 36, 255);
+    background-color: rgb(53, 53, 53);
+    border-left-color: rgb(36, 36, 36);
+    border-right-color: rgb(36, 36, 36);
+    border-top-color: rgb(36, 36, 36);
+    border-bottom-color: rgb(36, 36, 36);
 }
 
 .light-selected-tab {
-    background-color: rgba(177, 177, 177, 255);
-    border-left-color: rgba(147, 147, 147, 255);
-    border-right-color: rgba(147, 147, 147, 255);
-    border-top-color: rgba(147, 147, 147, 255);
-    border-bottom-color: rgba(147, 147, 147, 255);
+    background-color: rgb(177, 177, 177);
+    border-left-color: rgb(147, 147, 147);
+    border-right-color: rgb(147, 147, 147);
+    border-top-color: rgb(147, 147, 147);
+    border-bottom-color: rgb(147, 147, 147);
+}
+
+.screen {
+    flex-grow: 1;
+    flex-basis: 100%;
+}
+
+.installButton {
+    height: initial;
+    flex-shrink: 1;
 }

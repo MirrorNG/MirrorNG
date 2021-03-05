@@ -28,7 +28,7 @@ namespace Mirage.RemoteCalls
         }
 
         // InvokeCmd/Rpc can all use the same function here
-        internal void Invoke(NetworkReader reader, NetworkBehaviour invokingType, INetworkConnection senderConnection = null, int replyId=0)
+        internal void Invoke(NetworkReader reader, NetworkBehaviour invokingType, INetworkConnection senderConnection = null, int replyId = 0)
         {
             if (invokeClass.IsInstanceOfType(invokingType))
             {

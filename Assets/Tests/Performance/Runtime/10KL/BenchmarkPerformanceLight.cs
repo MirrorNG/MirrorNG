@@ -49,7 +49,7 @@ namespace Mirage.Tests.Performance.Runtime
         [UnityTest]
         [Performance]
         public IEnumerator Benchmark10KLight()
-        { 
+        {
             yield return Measure.Frames().MeasurementCount(240).WarmupCount(50).Run();
         }
 

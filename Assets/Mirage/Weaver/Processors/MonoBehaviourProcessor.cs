@@ -38,7 +38,7 @@ namespace Mirage.Weaver
 
         void ProcessMethods(TypeDefinition td)
         {
-            // find ServerRpc and RPC functions
+            // finds methods with RPC and other Attributes
             foreach (MethodDefinition md in td.Methods)
             {
                 if (md.HasCustomAttribute<ServerRpcAttribute>())
@@ -46,9 +46,13 @@ namespace Mirage.Weaver
                 if (md.HasCustomAttribute<ClientRpcAttribute>())
                     logger.Error($"ClientRpc {md.Name} must be declared inside a NetworkBehaviour", md);
                 if (md.HasCustomAttribute<ClientAttribute>())
-                    logger.Error($"Client method {md.Name} must be declared inside a NetworkBehaviour", md);                        
+                    logger.Error($"Client method {md.Name} must be declared inside a NetworkBehaviour", md);
                 if (md.HasCustomAttribute<ServerAttribute>())
                     logger.Error($"Server method {md.Name} must be declared inside a NetworkBehaviour", md);
+                if (md.HasCustomAttribute<HasAuthorityAttribute>())
+                    logger.Error($"HasAuthority method {md.Name} must be declared inside a NetworkBehaviour", md);
+                if (md.HasCustomAttribute<LocalPlayerAttribute>())
+                    logger.Error($"LocalPlayer method {md.Name} must be declared inside a NetworkBehaviour", md);
             }
         }
     }

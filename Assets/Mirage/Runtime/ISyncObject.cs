@@ -10,8 +10,8 @@ namespace Mirage
     {
         /// <summary>
         /// Raised after the list has been updated
-        /// Note that if there are multiple changes
-        /// this event is only raised once.
+        /// <para><b>Server:</b> This will invoke for every change</para>
+        /// <para><b>Client:</b> This will invoke after OnDeserialize</para>
         /// </summary>
         event Action OnChange;
 

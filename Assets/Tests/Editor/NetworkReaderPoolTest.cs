@@ -42,7 +42,7 @@ namespace Mirage
             NetworkReaderPool.Capacity = 5;
 
             const int testReaderCount = 10;
-            PooledNetworkReader[] Readers = new PooledNetworkReader[testReaderCount];
+            var Readers = new PooledNetworkReader[testReaderCount];
 
             for (int i = 0; i < testReaderCount; i++)
             {

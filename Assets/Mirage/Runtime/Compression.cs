@@ -41,7 +41,7 @@ namespace Mirage
             {
                 largestAbs = absZ;
                 largestComponent = ComponentType.Z;
-                largest =quaternion.z;
+                largest = quaternion.z;
             }
             if (absW > largestAbs)
             {

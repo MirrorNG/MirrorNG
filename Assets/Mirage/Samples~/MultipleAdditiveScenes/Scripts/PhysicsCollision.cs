@@ -21,7 +21,7 @@ namespace Mirage.Examples.MultipleAdditiveScenes
             rigidbody3D.isKinematic = !IsServer;
         }
 
-        [Server(error=false)]
+        [Server(error = false)]
         void OnCollisionStay(Collision other)
         {
             if (other.gameObject.CompareTag("Player"))

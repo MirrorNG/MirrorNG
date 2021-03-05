@@ -1,5 +1,8 @@
+using System.Collections;
+using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Mirage.Tests.Host
 {
@@ -36,16 +39,19 @@ namespace Mirage.Tests.Host
             Object.Destroy(player);
         }
 
-        [Test]
-        public void DontAutoSpawnTest()
+        [UnityTest]
+        public IEnumerator DontAutoSpawnTest() => UniTask.ToCoroutine(async () =>
         {
             bool invokeAddPlayerMessage = false;
             server.LocalConnection.RegisterHandler<AddPlayerMessage>(msg => invokeAddPlayerMessage = true);
 
             sceneManager.ChangeServerScene("Assets/Mirror/Tests/Runtime/testScene.unity");
+            // wait for messages to be processed
+            await UniTask.Yield();
 
             Assert.That(invokeAddPlayerMessage, Is.False);
-        }
+
+        });
 
         [Test]
         public void ManualSpawnTest()

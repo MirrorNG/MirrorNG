@@ -67,7 +67,7 @@ namespace Mirage.Tests
 
             ClassWithoutBaseMessage unpacked = MessagePacker.Unpack<ClassWithoutBaseMessage>(data);
 
-            Assert.That(unpacked.array, Is.EquivalentTo(new [] { 3, 4, 5 }));
+            Assert.That(unpacked.array, Is.EquivalentTo(new[] { 3, 4, 5 }));
         }
 
         [Test]

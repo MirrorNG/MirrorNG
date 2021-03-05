@@ -1,14 +1,13 @@
-using System.Collections;
-using NUnit.Framework;
-using UnityEngine.TestTools;
-using Cysharp.Threading.Tasks;
 using System;
+using System.Collections;
 using System.IO;
-
-using UnityEngine;
-using Random = UnityEngine.Random;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Mirage.KCP;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+using Random = UnityEngine.Random;
 
 namespace Mirage.Tests
 {
@@ -41,7 +40,7 @@ namespace Mirage.Tests
             transport.Port = port;
             // speed this up
             transport.HashCashBits = 3;
-       
+
             transport.Connected.AddListener(connection => serverConnection = (KcpConnection)connection);
 
             listenTask = transport.ListenAsync();
@@ -65,7 +64,7 @@ namespace Mirage.Tests
             clientConnection.Timeout = 500;
 
             data = new byte[Random.Range(10, 255)];
-            for (int i=0; i< data.Length; i++)
+            for (int i = 0; i < data.Length; i++)
                 data[i] = (byte)Random.Range(1, 255);
         });
 

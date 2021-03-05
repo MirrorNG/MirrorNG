@@ -1,5 +1,5 @@
-using UnityEngine;
 using NUnit.Framework;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Mirage

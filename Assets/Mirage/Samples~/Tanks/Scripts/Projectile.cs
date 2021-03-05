@@ -38,7 +38,7 @@ namespace Mirage.Examples.Tanks
 
         // [Server] because we don't want a warning if OnTriggerEnter is
         // called on the client
-        [Server(error=false)]
+        [Server(error = false)]
         void OnTriggerEnter(Collider co)
         {
             //Hit another player

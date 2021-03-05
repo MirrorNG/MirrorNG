@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using NSubstitute;
 using NUnit.Framework;
 using UnityEngine;
-using Object = UnityEngine.Object;
 using UnityEngine.Events;
-
 using static Mirage.Tests.LocalConnections;
+using Object = UnityEngine.Object;
 
 namespace Mirage
 {
@@ -16,7 +15,7 @@ namespace Mirage
 
         class SetHostVisibilityExceptionNetworkBehaviour : NetworkVisibility
         {
-            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) {}
+            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) { }
             public override bool OnCheckObserver(INetworkConnection conn) { return true; }
             public override void OnSetHostVisibility(bool visible)
             {
@@ -40,7 +39,7 @@ namespace Mirage
         {
             public int called;
             public INetworkConnection valuePassed;
-            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) {}
+            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) { }
             public override bool OnCheckObserver(INetworkConnection conn)
             {
                 ++called;
@@ -53,7 +52,7 @@ namespace Mirage
         class CheckObserverTrueNetworkBehaviour : NetworkVisibility
         {
             public int called;
-            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) {}
+            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) { }
             public override bool OnCheckObserver(INetworkConnection conn)
             {
                 ++called;
@@ -65,7 +64,7 @@ namespace Mirage
         class CheckObserverFalseNetworkBehaviour : NetworkVisibility
         {
             public int called;
-            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) {}
+            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) { }
             public override bool OnCheckObserver(INetworkConnection conn)
             {
                 ++called;
@@ -144,7 +143,7 @@ namespace Mirage
         class RebuildEmptyObserversNetworkBehaviour : NetworkVisibility
         {
             public override bool OnCheckObserver(INetworkConnection conn) { return true; }
-            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) {}
+            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) { }
             public int hostVisibilityCalled;
             public bool hostVisibilityValue;
             public override void OnSetHostVisibility(bool visible)
@@ -230,7 +229,7 @@ namespace Mirage
             var guid2 = Guid.NewGuid();
             InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
             {
-               identity.AssetId = guid2;
+                identity.AssetId = guid2;
             });
 
             Assert.That(exception.Message, Is.EqualTo($"Can not Set AssetId on NetworkIdentity '{identity.name}' becasue it already had an assetId, current assetId '{guid1:N}', attempted new assetId '{guid2:N}'"));
@@ -245,7 +244,7 @@ namespace Mirage
             identity.AssetId = guid1;
 
             // assign a guid
-            var guid2 = Guid.Empty;
+            Guid guid2 = Guid.Empty;
             ArgumentException exception = Assert.Throws<ArgumentException>(() =>
             {
                 identity.AssetId = guid2;
@@ -260,7 +259,7 @@ namespace Mirage
         {
             Debug.Assert(identity.AssetId == Guid.Empty, "assetId needs to be empty at the start of this test");
             // assign a guid
-            var guid2 = Guid.Empty;
+            Guid guid2 = Guid.Empty;
             // expect no errors
             identity.AssetId = guid2;
 
@@ -308,7 +307,7 @@ namespace Mirage
             INetworkConnection connection2 = Substitute.For<INetworkConnection>();
             // RemoveObserverInternal with invalid connection should do nothing
             identity.RemoveObserverInternal(connection2);
-            Assert.That(identity.observers, Is.EquivalentTo (new[] { connection }));
+            Assert.That(identity.observers, Is.EquivalentTo(new[] { connection }));
 
             // RemoveObserverInternal with existing connection should remove it
             identity.RemoveObserverInternal(connection);
@@ -507,7 +506,7 @@ namespace Mirage
 
             Assert.Throws<Exception>(() =>
             {
-               identity.OnSetHostVisibility(true);
+                identity.OnSetHostVisibility(true);
             });
         }
 
@@ -585,7 +584,7 @@ namespace Mirage
         public void NoMoreThan64Components()
         {
             // add byte.MaxValue+1 components
-            for (int i = 0; i < byte.MaxValue+1; ++i)
+            for (int i = 0; i < byte.MaxValue + 1; ++i)
             {
                 gameObject.AddComponent<SerializeTest1NetworkBehaviour>();
             }
@@ -700,7 +699,8 @@ namespace Mirage
 
             identity.OnStopServer.AddListener(mockCallback);
 
-            Assert.Throws<Exception>(() => {
+            Assert.Throws<Exception>(() =>
+            {
                 identity.StopServer();
             });
         }
@@ -817,7 +817,8 @@ namespace Mirage
         }
 
         [Test]
-        public void RebuildObserversAddsReadyConnectionsIfImplemented() { 
+        public void RebuildObserversAddsReadyConnectionsIfImplemented()
+        {
 
             // add a proximity checker
             // one with a ready connection, one with no ready connection, one with null connection
@@ -827,7 +828,7 @@ namespace Mirage
 
             // rebuild observers should add all component's ready observers
             identity.RebuildObservers(true);
-            Assert.That(identity.observers, Is.EquivalentTo( new[] { comp.observer }));
+            Assert.That(identity.observers, Is.EquivalentTo(new[] { comp.observer }));
         }
 
 

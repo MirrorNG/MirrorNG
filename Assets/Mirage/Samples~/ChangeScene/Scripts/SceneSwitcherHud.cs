@@ -11,7 +11,7 @@ namespace Mirage.Examples.SceneChange
 
         public void Update()
         {
-            if(additiveLoaded)
+            if (additiveLoaded)
             {
                 AdditiveButtonText.text = "Additive Unload";
             }

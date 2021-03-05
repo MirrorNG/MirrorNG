@@ -185,7 +185,7 @@ namespace Mirage
                 switch (operation)
                 {
                     case Operation.OP_ADD:
-                         DeserializeAdd(reader, apply);
+                        DeserializeAdd(reader, apply);
                         break;
 
                     case Operation.OP_CLEAR:

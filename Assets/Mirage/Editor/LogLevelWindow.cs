@@ -24,7 +24,7 @@ namespace Mirage
 
             foreach (KeyValuePair<string, ILogger> item in LogFactory.loggers)
             {
-                DrawLoggerField(item.Key, item.Value);               
+                DrawLoggerField(item.Key, item.Value);
             }
             EditorGUILayout.EndVertical();
 

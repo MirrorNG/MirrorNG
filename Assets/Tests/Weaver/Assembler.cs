@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Mono.Cecil;
+using Unity.CompilationPipeline.Common.ILPostProcessing;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
-using Unity.CompilationPipeline.Common.ILPostProcessing;
-using Mono.Cecil;
 
 namespace Mirage.Weaver
 {
@@ -163,7 +163,7 @@ namespace Mirage.Weaver
             DeleteOutputOnClear = false;
         }
 
-       
+
 
         public static AssemblyDefinition Build(IWeaverLogger logger)
         {
@@ -178,7 +178,7 @@ namespace Mirage.Weaver
             {
                 assemblyBuilder.compilerOptions.AllowUnsafeCode = true;
             }
-            
+
             assemblyBuilder.buildFinished += delegate (string assemblyPath, CompilerMessage[] compilerMessages)
             {
                 CompilerMessages.AddRange(compilerMessages);

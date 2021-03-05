@@ -8,7 +8,8 @@ namespace Mirage
     /// </summary>
     public sealed class PooledNetworkWriter : NetworkWriter, IDisposable
     {
-        public void Dispose() {
+        public void Dispose()
+        {
             NetworkWriterPool.Recycle(this);
         }
     }

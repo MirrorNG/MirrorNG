@@ -62,7 +62,7 @@ namespace Mirage.Tests.ClientServer
         {
             bool invoked = false;
 
-            connectionToServer.RegisterHandler<WovenTestMessage>(msg => invoked = true) ;
+            connectionToServer.RegisterHandler<WovenTestMessage>(msg => invoked = true);
 
             serverIdentity.ConnectionToClient.Send(message);
 
@@ -76,7 +76,7 @@ namespace Mirage.Tests.ClientServer
         {
             bool invoked = false;
 
-            connectionToClient.RegisterHandler< WovenTestMessage>(msg => invoked = true);
+            connectionToClient.RegisterHandler<WovenTestMessage>(msg => invoked = true);
             connectionToServer.Send(message);
 
             await AsyncUtil.WaitUntilWithTimeout(() => invoked);
@@ -114,7 +114,7 @@ namespace Mirage.Tests.ClientServer
         [Test]
         public void NumPlayersTest()
         {
-            Assert.That(server.NumPlayers, Is.EqualTo(1));
+            Assert.That(server.NumberOfPlayers, Is.EqualTo(1));
         }
 
         [Test]
@@ -139,7 +139,7 @@ namespace Mirage.Tests.ClientServer
 
         [UnityTest]
         public IEnumerator StoppedInvokeTest() => UniTask.ToCoroutine(async () =>
-        
+
         {
             UnityAction func1 = Substitute.For<UnityAction>();
             server.Stopped.AddListener(func1);

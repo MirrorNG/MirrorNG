@@ -10,7 +10,7 @@ namespace Mirage.Tests
     {
         public readonly Channel<IConnection> AcceptConnections = Cysharp.Threading.Tasks.Channel.CreateSingleConsumerUnbounded<IConnection>();
 
-        public override IEnumerable<string> Scheme => new [] { "local" };
+        public override IEnumerable<string> Scheme => new[] { "local" };
 
         public override bool Supported => true;
 

@@ -207,7 +207,7 @@ namespace Mirage
                         break;
 
                     case Operation.OP_SET:
-                         DeserializeSet(reader, apply);
+                        DeserializeSet(reader, apply);
                         break;
 
                     case Operation.OP_CLEAR:

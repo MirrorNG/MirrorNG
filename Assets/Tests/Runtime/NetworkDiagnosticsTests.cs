@@ -1,6 +1,6 @@
 using System;
-using NUnit.Framework;
 using NSubstitute;
+using NUnit.Framework;
 
 namespace Mirage.Tests
 {

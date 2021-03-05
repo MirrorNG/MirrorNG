@@ -255,7 +255,7 @@ namespace Mirage.Tests
 
             clientSyncDictionary.CopyTo(data, 0);
 
-            Assert.That(data, Is.EquivalentTo(new []
+            Assert.That(data, Is.EquivalentTo(new[]
             {
                 new KeyValuePair<int, string>(0, "Hello"),
                 new KeyValuePair<int, string>(1, "World"),
@@ -293,7 +293,7 @@ namespace Mirage.Tests
 
             serverSyncDictionary.Remove(data);
 
-            Assert.That(serverSyncDictionary, Is.EquivalentTo(new []
+            Assert.That(serverSyncDictionary, Is.EquivalentTo(new[]
             {
                 new KeyValuePair<int, string>(1, "World"),
                 new KeyValuePair<int, string>(2, "!"),

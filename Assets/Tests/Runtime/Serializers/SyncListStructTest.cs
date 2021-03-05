@@ -8,7 +8,7 @@ namespace Mirage.Tests
         public void ListIsDirtyWhenModifingAndSettingStruct()
         {
             // let the weaver know to generate a reader and writer for TestPlayer
-            NetworkWriter writer = new NetworkWriter() ;
+            var writer = new NetworkWriter();
             writer.Write<TestPlayer>(default);
 
             var serverList = new SyncList<TestPlayer>();

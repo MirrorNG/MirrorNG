@@ -40,7 +40,7 @@ namespace Mirage
             }
             if (Client != null)
             {
-                if(SceneManager != null)
+                if (SceneManager != null)
                 {
                     SceneManager.ClientSceneChanged.AddListener(OnClientSceneChanged);
                 }
@@ -49,7 +49,7 @@ namespace Mirage
                     Client.Authenticated.AddListener(c => Client.Send(new AddPlayerMessage()));
                 }
 
-                if(ClientObjectManager != null)
+                if (ClientObjectManager != null)
                 {
                     ClientObjectManager.RegisterPrefab(PlayerPrefab);
                 }

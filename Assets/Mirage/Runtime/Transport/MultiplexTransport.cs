@@ -51,7 +51,7 @@ namespace Mirage
                 t.Started.AddListener(() => Started?.Invoke());
             }
         }
-        
+
         public override UniTask ListenAsync()
         {
             return UniTask.WhenAll(transports.Select(t => t.ListenAsync()));

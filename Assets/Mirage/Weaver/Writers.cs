@@ -34,7 +34,7 @@ namespace Mirage.Weaver
 
         public MethodReference GetWriteFunc<T>(SequencePoint sequencePoint) =>
             GetWriteFunc(module.ImportReference<T>(), sequencePoint);
-       
+
         /// <summary>
         /// Finds existing writer for type, if non exists trys to create one
         /// <para>This method is recursive</para>
@@ -211,7 +211,7 @@ namespace Mirage.Weaver
             worker.Append(worker.Create(OpCodes.Brtrue, labelNotNull));
             worker.Append(worker.Create(OpCodes.Ldarg_0));
             worker.Append(worker.Create(OpCodes.Ldc_I4_0));
-            worker.Append(worker.Create(OpCodes.Call,  GetWriteFunc<bool>(sequencePoint)));
+            worker.Append(worker.Create(OpCodes.Call, GetWriteFunc<bool>(sequencePoint)));
             worker.Append(worker.Create(OpCodes.Ret));
             worker.Append(labelNotNull);
 
@@ -250,7 +250,7 @@ namespace Mirage.Weaver
 
         MethodDefinition GenerateCollectionWriter(TypeReference variable, TypeReference elementType, Expression<Action> writerFunction, SequencePoint sequencePoint)
         {
-           
+
             MethodDefinition writerFunc = GenerateWriterFunc(variable);
 
             MethodReference elementWriteFunc = GetWriteFunc(elementType, sequencePoint);

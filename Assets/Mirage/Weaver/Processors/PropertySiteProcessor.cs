@@ -36,8 +36,8 @@ namespace Mirage.Weaver
             {
                 if (opField.DeclaringType.IsGenericInstance || opField.DeclaringType.HasGenericParameters) // We're calling to a generic class
                 {
-                    FieldReference newField = i.Operand as FieldReference;
-                    GenericInstanceType genericType = (GenericInstanceType)newField.DeclaringType;
+                    var newField = i.Operand as FieldReference;
+                    var genericType = (GenericInstanceType)newField.DeclaringType;
                     i.OpCode = OpCodes.Callvirt;
                     i.Operand = replacement.MakeHostInstanceGeneric(genericType);
                 }
@@ -58,8 +58,8 @@ namespace Mirage.Weaver
             {
                 if (opField.DeclaringType.IsGenericInstance || opField.DeclaringType.HasGenericParameters) // We're calling to a generic class
                 {
-                    FieldReference newField = i.Operand as FieldReference;
-                    GenericInstanceType genericType = (GenericInstanceType)newField.DeclaringType;
+                    var newField = i.Operand as FieldReference;
+                    var genericType = (GenericInstanceType)newField.DeclaringType;
                     i.OpCode = OpCodes.Callvirt;
                     i.Operand = replacement.MakeHostInstanceGeneric(genericType);
                 }

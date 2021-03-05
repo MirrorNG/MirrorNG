@@ -5,7 +5,8 @@ using UnityEngine;
 namespace Mirage.KCP
 {
     //See SetNoDelay for details
-    public enum KcpDelayMode {
+    public enum KcpDelayMode
+    {
         ///<summary>No Delay Off, 40ms rate, No Fast Resend, No Congestion Window</summary>
         Normal,
         ///<summary>No Delay Off, 30ms rate, No Fast Resend, Congestion Window</summary>
@@ -552,7 +553,7 @@ namespace Mirage.KCP
 
         private void UpdateCongestionWindow(uint prev_una)
         {
-            if (snd_una <= prev_una || cwnd >= rmt_wnd)            
+            if (snd_una <= prev_una || cwnd >= rmt_wnd)
                 return;
 
             if (cwnd < ssthresh)
@@ -954,7 +955,7 @@ namespace Mirage.KCP
         /// <param name="mode"></param>
         public void SetNoDelay(KcpDelayMode mode)
         {
-            switch(mode)
+            switch (mode)
             {
                 case KcpDelayMode.Normal:
                     SetNoDelay(false, 40, 0, false);

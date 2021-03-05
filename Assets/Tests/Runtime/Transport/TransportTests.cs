@@ -1,15 +1,15 @@
+using System;
 using System.Collections;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+using Cysharp.Threading.Tasks;
+using Mirage.KCP;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
-using System.Text;
-using System.IO;
-using System.Net;
-using System;
 using Object = UnityEngine.Object;
-using System.Linq;
-using Cysharp.Threading.Tasks;
-using Mirage.KCP;
 
 namespace Mirage.Tests
 {

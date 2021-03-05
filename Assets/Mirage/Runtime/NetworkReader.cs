@@ -417,7 +417,7 @@ namespace Mirage
             if (length < 0)
                 return null;
             var result = new List<T>(length);
-            for (int i=0; i< length; i++)
+            for (int i = 0; i < length; i++)
             {
                 result.Add(reader.Read<T>());
             }

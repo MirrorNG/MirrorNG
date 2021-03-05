@@ -15,7 +15,7 @@ namespace Mirage
 
         public void SetAllClientsNotReady()
         {
-            foreach(ObjectReady obj in ObjectReadyList)
+            foreach (ObjectReady obj in ObjectReadyList)
             {
                 obj.SetClientNotReady();
             }

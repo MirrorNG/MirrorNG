@@ -137,7 +137,7 @@ namespace Mirage.Weaver
 
         public static FieldReference GetField(this TypeDefinition type, string fieldName)
         {
-            if(type.HasFields)
+            if (type.HasFields)
             {
                 for (int i = 0; i < type.Fields.Count; i++)
                 {

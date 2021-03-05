@@ -33,7 +33,7 @@ namespace Mirage.Examples.Pong
         }
 
         // only call this on server
-        [Server(error=false)]
+        [Server(error = false)]
         void OnCollisionEnter2D(Collision2D col)
         {
             // Note: 'col' holds the collision information. If the

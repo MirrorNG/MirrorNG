@@ -1,6 +1,6 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
 using NSubstitute;
+using UnityEngine;
 
 namespace Mirage.Tests
 {

@@ -43,6 +43,13 @@ namespace Mirage
             logger.Log(LogType.Error, message);
         }
 
+        [System.Diagnostics.Conditional("UNITY_ASSERTIONS")]
+        public static void Assert(this ILogger logger, bool condition, object message)
+        {
+            if (!condition)
+                logger.Log(LogType.Assert, message);
+        }
+
         public static void LogWarning(this ILogger logger, object message)
         {
             logger.Log(LogType.Warning, message);

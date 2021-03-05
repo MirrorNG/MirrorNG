@@ -12,7 +12,7 @@ namespace Mirage.Examples.Additive
 
         NetworkAnimator networkAnimator;
 
-        [Server(error=false)]
+        [Server(error = false)]
         void Start()
         {
             networkAnimator = GetComponent<NetworkAnimator>();

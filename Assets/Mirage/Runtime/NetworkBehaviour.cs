@@ -125,12 +125,12 @@ namespace Mirage
         protected internal ulong SyncVarDirtyBits { get; private set; }
         ulong syncVarHookGuard;
 
-        internal protected bool GetSyncVarHookGuard(ulong dirtyBit)
+        protected internal bool GetSyncVarHookGuard(ulong dirtyBit)
         {
             return (syncVarHookGuard & dirtyBit) != 0UL;
         }
 
-        internal protected void SetSyncVarHookGuard(ulong dirtyBit, bool value)
+        protected internal void SetSyncVarHookGuard(ulong dirtyBit, bool value)
         {
             if (value)
                 syncVarHookGuard |= dirtyBit;
@@ -210,7 +210,7 @@ namespace Mirage
         // this gets called in the constructor by the weaver
         // for every SyncObject in the component (e.g. SyncLists).
         // We collect all of them and we synchronize them with OnSerialize/OnDeserialize
-        internal protected void InitSyncObject(ISyncObject syncObject)
+        protected internal void InitSyncObject(ISyncObject syncObject)
         {
             syncObjects.Add(syncObject);
             syncObject.OnChange += SyncObject_OnChange;

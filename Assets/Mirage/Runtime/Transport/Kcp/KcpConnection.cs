@@ -178,7 +178,7 @@ namespace Mirage.KCP
 
         protected abstract void RawSend(byte[] data, int length);
 
-        private void SendWithChecksum(byte [] data, int length)
+        private void SendWithChecksum(byte[] data, int length)
         {
             // add a CRC64 checksum in the reserved space
             ulong crc = Crc64.Compute(data, RESERVED, length - RESERVED);

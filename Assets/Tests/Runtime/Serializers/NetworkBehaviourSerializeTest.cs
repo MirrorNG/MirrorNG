@@ -142,7 +142,7 @@ namespace Mirage.Tests.NetworkBehaviourSerialize
 
         T CreateBehaviour<T>() where T : NetworkBehaviour
         {
-            GameObject go1 = new GameObject();
+            var go1 = new GameObject();
             go1.AddComponent<NetworkIdentity>();
             createdObjects.Add(go1);
             return go1.AddComponent<T>();

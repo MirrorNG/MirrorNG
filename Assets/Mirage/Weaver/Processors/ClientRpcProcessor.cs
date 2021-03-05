@@ -71,7 +71,7 @@ namespace Mirage.Weaver
                 worker.Append(worker.Create(OpCodes.Ldarg_0));
                 worker.Append(worker.Create(OpCodes.Call, (NetworkBehaviour nb) => nb.ConnectionToServer));
             }
-            
+
             if (!ReadArguments(md, worker, hasNetworkConnection))
                 return rpc;
 
@@ -152,7 +152,7 @@ namespace Mirage.Weaver
 
             string rpcName = md.Name;
 
-            Client target = clientRpcAttr.GetField("target", Client.Observers); 
+            Client target = clientRpcAttr.GetField("target", Client.Observers);
             int channel = clientRpcAttr.GetField("channel", 0);
             bool excludeOwner = clientRpcAttr.GetField("excludeOwner", false);
 
@@ -202,7 +202,7 @@ namespace Mirage.Weaver
                 return false;
             }
 
-            Client target = clientRpcAttr.GetField("target", Client.Observers); 
+            Client target = clientRpcAttr.GetField("target", Client.Observers);
             if (target == Client.Connection && !HasNetworkConnectionParameter(md))
             {
                 logger.Error("ClientRpc with Client.Connection needs a network connection parameter", md);

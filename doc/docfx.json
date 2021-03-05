@@ -62,7 +62,7 @@
         "fileMetadataFiles": [],
         "template": [
             "default",
-            "templates"
+            "templates/unity"
         ],
         "xrefService": [
             "https://xref.docs.microsoft.com/query?uid={uid}"

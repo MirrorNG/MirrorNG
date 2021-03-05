@@ -15,15 +15,15 @@ namespace Mirage.Tests
         [Test]
         public void RemoveShouldRemoveItem()
         {
-            SyncList<TestObject> serverList = new SyncList<TestObject>();
-            SyncList<TestObject> clientList = new SyncList<TestObject>();
+            var serverList = new SyncList<TestObject>();
+            var clientList = new SyncList<TestObject>();
 
             SyncListTest.SerializeAllTo(serverList, clientList);
 
             // add some items
-            TestObject item1 = new TestObject { id = 1, text = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nostrum ullam aliquid perferendis, aut nihil sunt quod ipsum corporis a. Cupiditate, alias. Commodi, molestiae distinctio repellendus dolor similique delectus inventore eum." };
+            var item1 = new TestObject { id = 1, text = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nostrum ullam aliquid perferendis, aut nihil sunt quod ipsum corporis a. Cupiditate, alias. Commodi, molestiae distinctio repellendus dolor similique delectus inventore eum." };
             serverList.Add(item1);
-            TestObject item2 = new TestObject { id = 2, text = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nostrum ullam aliquid perferendis, aut nihil sunt quod ipsum corporis a. Cupiditate, alias. Commodi, molestiae distinctio repellendus dolor similique delectus inventore eum." };
+            var item2 = new TestObject { id = 2, text = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nostrum ullam aliquid perferendis, aut nihil sunt quod ipsum corporis a. Cupiditate, alias. Commodi, molestiae distinctio repellendus dolor similique delectus inventore eum." };
             serverList.Add(item2);
 
             // sync
@@ -42,15 +42,15 @@ namespace Mirage.Tests
         [Test]
         public void ClearShouldClearAll()
         {
-            SyncList<TestObject> serverList = new SyncList<TestObject>();
-            SyncList<TestObject> clientList = new SyncList<TestObject>();
+            var serverList = new SyncList<TestObject>();
+            var clientList = new SyncList<TestObject>();
 
             SyncListTest.SerializeAllTo(serverList, clientList);
 
             // add some items
-            TestObject item1 = new TestObject { id = 1, text = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nostrum ullam aliquid perferendis, aut nihil sunt quod ipsum corporis a. Cupiditate, alias. Commodi, molestiae distinctio repellendus dolor similique delectus inventore eum." };
+            var item1 = new TestObject { id = 1, text = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nostrum ullam aliquid perferendis, aut nihil sunt quod ipsum corporis a. Cupiditate, alias. Commodi, molestiae distinctio repellendus dolor similique delectus inventore eum." };
             serverList.Add(item1);
-            TestObject item2 = new TestObject { id = 2, text = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nostrum ullam aliquid perferendis, aut nihil sunt quod ipsum corporis a. Cupiditate, alias. Commodi, molestiae distinctio repellendus dolor similique delectus inventore eum." };
+            var item2 = new TestObject { id = 2, text = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nostrum ullam aliquid perferendis, aut nihil sunt quod ipsum corporis a. Cupiditate, alias. Commodi, molestiae distinctio repellendus dolor similique delectus inventore eum." };
             serverList.Add(item2);
 
             // sync

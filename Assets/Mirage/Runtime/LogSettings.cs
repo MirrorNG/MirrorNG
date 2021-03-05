@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,7 +27,7 @@ namespace Mirage
         {
             foreach (Level setting in Levels)
             {
-                var logger = LogFactory.GetLogger(setting.Name);
+                ILogger logger = LogFactory.GetLogger(setting.Name);
                 logger.filterLogType = setting.level;
             }
         }

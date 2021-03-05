@@ -89,7 +89,7 @@ namespace Mirage
         /// <summary>
         /// NetworkClient can connect to local server in host mode too
         /// </summary>
-        public bool IsLocalClient {get; private set; }
+        public bool IsLocalClient { get; private set; }
 
         /// <summary>
         /// Connect client to a NetworkServer instance.

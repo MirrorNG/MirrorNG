@@ -12,7 +12,7 @@ namespace Mirage.Weaver
         public const string SkeletonPrefix = "Skeleton_";
         public const string UserCodePrefix = "UserCode_";
 
-        protected readonly ModuleDefinition  module;
+        protected readonly ModuleDefinition module;
         protected readonly Readers readers;
         protected readonly Writers writers;
         protected readonly IWeaverLogger logger;

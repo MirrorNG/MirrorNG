@@ -395,7 +395,7 @@ namespace Mirage
         private ushort receiveSequence;
         private ulong receiveMask;
 
-        
+
 
         /// <summary>
         /// Sends a message, but notify when it is delivered or lost
@@ -410,7 +410,7 @@ namespace Mirage
                 NotifyLost?.Invoke(this, token);
                 return;
             }
-            
+
             using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
             {
                 var notifyPacket = new NotifyPacket

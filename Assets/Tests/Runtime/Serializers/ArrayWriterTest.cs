@@ -15,7 +15,7 @@ namespace Mirage.Tests
 
             Assert.IsNull(unpacked);
         }
-        
+
         [Test]
         public void TestEmptyByteArray()
         {
@@ -77,7 +77,7 @@ namespace Mirage.Tests
 
             int[] unpacked = MessagePacker.Unpack<int[]>(data);
 
-            Assert.That(unpacked, Is.EquivalentTo(new [] { 3, 4, 5 }));
+            Assert.That(unpacked, Is.EquivalentTo(new[] { 3, 4, 5 }));
         }
     }
 }

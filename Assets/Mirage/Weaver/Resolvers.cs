@@ -9,7 +9,7 @@ using Mono.Cecil;
 namespace Mirage.Weaver
 {
     public static class Resolvers
-    {        
+    {
         public static MethodDefinition ResolveDefaultPublicCtor(TypeReference variable)
         {
             foreach (MethodDefinition methodRef in variable.Resolve().Methods)

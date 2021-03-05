@@ -33,17 +33,19 @@ namespace Mirage
         [Tooltip("Enable to force this object to be hidden from players.")]
         public bool ForceHidden;
 
-        public void Start()
+        public void Awake()
         {
-            NetIdentity.OnStartServer.AddListener(() => {
+            NetIdentity.OnStartServer.AddListener(() =>
+            {
                 InvokeRepeating(nameof(RebuildObservers), 0, VisibilityUpdateInterval);
             });
 
-            NetIdentity.OnStopServer.AddListener(() => {
+            NetIdentity.OnStopServer.AddListener(() =>
+            {
                 CancelInvoke(nameof(RebuildObservers));
             });
         }
-        
+
         void RebuildObservers()
         {
             NetIdentity.RebuildObservers(false);

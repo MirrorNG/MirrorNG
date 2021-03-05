@@ -14,7 +14,7 @@ namespace Mirage.Weaver
     /// <summary>
     /// Processes [ServerRpc] methods in NetworkBehaviour
     /// </summary>
-    public class ServerRpcProcessor :RpcProcessor
+    public class ServerRpcProcessor : RpcProcessor
     {
         struct ServerRpcMethod
         {
@@ -26,7 +26,7 @@ namespace Mirage.Weaver
         readonly List<ServerRpcMethod> serverRpcs = new List<ServerRpcMethod>();
 
         public ServerRpcProcessor(ModuleDefinition module, Readers readers, Writers writers, IWeaverLogger logger) : base(module, readers, writers, logger)
-        {            
+        {
         }
 
         /// <summary>

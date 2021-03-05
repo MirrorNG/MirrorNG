@@ -227,7 +227,7 @@ namespace Mirage.KCP
                 HashCashBits = HashCashBits
             };
 
-            ushort port = (ushort)(uri.IsDefaultPort? Port : uri.Port);
+            ushort port = (ushort)(uri.IsDefaultPort ? Port : uri.Port);
 
             await client.ConnectAsync(uri.Host, port);
             return client;

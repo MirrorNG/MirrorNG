@@ -51,7 +51,7 @@ namespace Mirage.Weaver
                 Line = sequencePoint?.StartLine ?? 0,
                 Column = sequencePoint?.StartColumn ?? 0,
                 MessageData = message
-            }) ;
+            });
         }
     }
 }

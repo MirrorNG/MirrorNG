@@ -10,7 +10,7 @@ namespace Mirage.Weaver
     {
         private readonly IWeaverLogger logger;
 
-        public ServerClientAttributeProcessor (IWeaverLogger logger)
+        public ServerClientAttributeProcessor(IWeaverLogger logger)
         {
             this.logger = logger;
         }
@@ -42,7 +42,7 @@ namespace Mirage.Weaver
 
         bool ProcessMethodAttributes(MethodDefinition md)
         {
-            bool modified = InjectGuard<ServerAttribute>(md,  nb => nb.IsServer, "[Server] function '" + md.FullName + "' called on client");
+            bool modified = InjectGuard<ServerAttribute>(md, nb => nb.IsServer, "[Server] function '" + md.FullName + "' called on client");
 
             modified |= InjectGuard<ClientAttribute>(md, nb => nb.IsClient, "[Client] function '" + md.FullName + "' called on server");
 

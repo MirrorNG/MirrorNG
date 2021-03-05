@@ -7,9 +7,6 @@
 - name: Components
   href: Components/toc.yml
   topicHref: Components/
-- name: Transports
-  href: Transports/toc.yml
-  topicHref: Transports/
 - name: Examples
   href: Examples/toc.yml
   topicHref: Examples/

@@ -12,14 +12,14 @@ namespace Mirage.KCP
 
         readonly byte[] buffer = new byte[1500];
 
-        public int HashCashBits {get; set;}
+        public int HashCashBits { get; set; }
         /// <summary>
         /// Client connection,  does not share the UDP client with anyone
         /// so we can set up our own read loop
         /// </summary>
         /// <param name="host"></param>
         /// <param name="port"></param>
-        public KcpClientConnection(KcpDelayMode delayMode, int sendWindowSize, int receiveWindowSize) : base(delayMode, sendWindowSize, receiveWindowSize) 
+        public KcpClientConnection(KcpDelayMode delayMode, int sendWindowSize, int receiveWindowSize) : base(delayMode, sendWindowSize, receiveWindowSize)
         {
         }
 
@@ -79,7 +79,7 @@ namespace Mirage.KCP
             // the server won't accept connections otherwise
             string applicationName = Application.productName;
 
-            HashCash token = await UniTask.RunOnThreadPool( () => HashCash.Mine(applicationName, bits));
+            HashCash token = await UniTask.RunOnThreadPool(() => HashCash.Mine(applicationName, bits));
             byte[] hello = new byte[1000];
             int length = HashCashEncoding.Encode(hello, 0, token);
 

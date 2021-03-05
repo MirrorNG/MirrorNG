@@ -1,5 +1,6 @@
 using System.Collections;
 using Cysharp.Threading.Tasks;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -28,6 +29,9 @@ namespace Mirage.Tests.Host
         public IEnumerator SetupHost() => UniTask.ToCoroutine(async () =>
         {
             networkManagerGo = new GameObject();
+            // set gameobject name to test name (helps with debugging)
+            networkManagerGo.name = TestContext.CurrentContext.Test.MethodName;
+
             networkManagerGo.AddComponent<MockTransport>();
             sceneManager = networkManagerGo.AddComponent<NetworkSceneManager>();
             serverObjectManager = networkManagerGo.AddComponent<ServerObjectManager>();

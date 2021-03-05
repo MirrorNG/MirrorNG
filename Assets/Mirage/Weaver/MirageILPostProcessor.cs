@@ -1,8 +1,8 @@
-using Unity.CompilationPipeline.Common.ILPostProcessing;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Unity.CompilationPipeline.Common.ILPostProcessing;
 
 namespace Mirage.Weaver
 {

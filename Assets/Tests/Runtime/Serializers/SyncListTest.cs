@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 using NSubstitute;
+using NUnit.Framework;
 
 namespace Mirage.Tests
 {

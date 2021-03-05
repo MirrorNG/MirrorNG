@@ -5,7 +5,7 @@ namespace Mirage
 {
     public interface INetworkClient
     {
-      
+
         /// <summary>
         /// Event fires once the Client has connected its Server.
         /// </summary>

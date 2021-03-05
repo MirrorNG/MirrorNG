@@ -17,7 +17,7 @@ namespace Mirage.Examples.MultipleAdditiveScenes
                 randomColor = GetComponent<RandomColor>();
         }
 
-        [Server(error=false)]
+        [Server(error = false)]
         void OnTriggerEnter(Collider other)
         {
             if (other.gameObject.CompareTag("Player"))

@@ -73,7 +73,7 @@ namespace Mirage
         {
         }
 
-        public SyncList(IEqualityComparer<T> comparer )
+        public SyncList(IEqualityComparer<T> comparer)
         {
             this.comparer = comparer ?? EqualityComparer<T>.Default;
             objects = new List<T>();
@@ -465,7 +465,8 @@ namespace Mirage
 
             public void Reset() => index = -1;
             object IEnumerator.Current => Current;
-            public void Dispose() {
+            public void Dispose()
+            {
                 // nothing to dispose
             }
         }
