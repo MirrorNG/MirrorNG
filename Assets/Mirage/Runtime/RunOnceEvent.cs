@@ -22,7 +22,6 @@ namespace Mirage
         public void Reset()
         {
             hasInvoked = false;
-            // todo this will remove inspector events, do we want to do that?
             baseEvent.RemoveAllListeners();
         }
     }
