@@ -5,30 +5,81 @@ using UnityEngine;
 
 namespace Mirage.SocketLayer
 {
+    public struct Config
+    {
+        public int MaxConnections;
+    }
     /// <summary>
     /// Controls flow of data in/out of mirage, Uses <see cref="ISocket"/>
     /// </summary>
     public sealed class Peer
     {
+        static readonly ILogger logger = LogFactory.GetLogger<Peer>();
+
         // todo SendUnreliable
         // tood SendNotify
 
         readonly ISocket socket;
+        readonly Config config;
 
         readonly Dictionary<EndPoint, Connection> connections;
 
+        readonly byte[] commandBuffer = new byte[3];
 
-        public Peer(ISocket socket)
+        public event Action<Connection> OnConnected;
+
+        public Peer(ISocket socket, Config config)
         {
             this.socket = socket ?? throw new ArgumentNullException(nameof(socket));
+            this.config = config;
         }
 
-        public void Send(Connection connection, byte[] data)
+        public void Send(Connection connection, byte[] data, int? length = null)
         {
-            socket.Send(connection.EndPoint, data);
+            socket.Send(connection.EndPoint, data, length);
+        }
+        public void SendUnconnected(EndPoint endPoint, byte[] data, int? length = null)
+        {
+            socket.Send(endPoint, data, length);
         }
 
-        public void ReceiveLoop()
+        public void SendCommandUnconnected(EndPoint endPoint, Commands command, byte? extra = null)
+        {
+            commandBuffer[0] = (byte)Messages.Command;
+            commandBuffer[1] = (byte)command;
+
+            if (extra.HasValue)
+            {
+                commandBuffer[2] = extra.Value;
+                SendUnconnected(endPoint, commandBuffer, 3);
+            }
+            else
+            {
+                SendUnconnected(endPoint, commandBuffer, 2);
+            }
+        }
+        public void SendCommand(Connection connection, Commands command, byte? extra = null)
+        {
+            commandBuffer[0] = (byte)Messages.Command;
+            commandBuffer[1] = (byte)command;
+
+            if (extra.HasValue)
+            {
+                commandBuffer[2] = extra.Value;
+                Send(connection, commandBuffer, 3);
+            }
+            else
+            {
+                Send(connection, commandBuffer, 2);
+            }
+        }
+
+        public void Tick()
+        {
+            ReceiveLoop();
+        }
+
+        private void ReceiveLoop()
         {
             byte[] buffer = getBuffer();
             while (socket.Poll())
@@ -59,21 +110,64 @@ namespace Mirage.SocketLayer
             IMessageReceiver receiver = getReceiver(connection);
             receiver.TransportReceive(segment);
         }
-
         private void HandleNewConnection(EndPoint endPoint, ArraySegment<byte> segment)
         {
-            // ignore endpoint/packet that can't be validated
-            if (!Validate(endPoint, segment)) { return; }
+            // if invalid, then reject without reason
+            if (Validate(endPoint, segment)) { return; }
 
-            throw new NotImplementedException();
+            if (AtMaxConnections())
+            {
+                RejectConnectionWithReason(endPoint, RejectReason.ServerFull);
+            }
+            else
+            {
+                AcceptNewConnection(endPoint);
+            }
         }
 
         private bool Validate(EndPoint endPoint, ArraySegment<byte> segment)
         {
             // todo do security stuff here:
+            // - connect request
             // - simple key/phrase send from client with first message
             // - hashcash??
             return true;
+        }
+
+        private bool AtMaxConnections()
+        {
+            return connections.Count >= config.MaxConnections;
+        }
+        private void AcceptNewConnection(EndPoint endPoint)
+        {
+            if (logger.LogEnabled()) logger.Log($"Accepting new connection from:{endPoint}");
+
+            var connection = new Connection(endPoint, config);
+            connection.LastRecvPacketTime = Time.time;
+            connections.Add(endPoint, connection);
+
+            switch (connection.State)
+            {
+                case ConnectionState.Created:
+                    connection.ChangeState(ConnectionState.Connected);
+                    OnConnected?.Invoke(connection);
+                    SendCommand(connection, Commands.ConnectionAccepted);
+                    break;
+
+                case ConnectionState.Connected:
+                    // send command again, unreliable so first message could have been missed
+                    SendCommand(connection, Commands.ConnectionAccepted);
+                    break;
+
+                case ConnectionState.Connecting:
+                    // todo use better Exception type
+                    throw new Exception($"Server connections should not be in {nameof(ConnectionState.Connecting)} state");
+            }
+        }
+
+        private void RejectConnectionWithReason(EndPoint endPoint, RejectReason reason)
+        {
+            SendCommandUnconnected(endPoint, Commands.ConnectionAccepted, (byte)reason);
         }
 
         private IMessageReceiver getReceiver(Connection connection)
@@ -82,13 +176,71 @@ namespace Mirage.SocketLayer
         }
     }
 
+
+    public enum Messages
+    {
+        None = 0,
+        Command = 1,
+    }
+    public enum Commands
+    {
+        None = 0,
+        ConnectionAccepted = 1,
+        ConnectionRejected = 1,
+    }
+    enum RejectReason
+    {
+        None = 0,
+        ServerFull = 1,
+    }
+    public enum ConnectionState
+    {
+        Created = 1,
+        Connecting = 2,
+        Connected = 3,
+
+        // ..
+
+        Disconnected = 9,
+        Destroyed = 10,
+    }
     public sealed class Connection
     {
-        public readonly EndPoint EndPoint;
+        static readonly ILogger logger = LogFactory.GetLogger<Connection>();
 
-        public Connection(EndPoint endPoint)
+        public ConnectionState State { get; private set; }
+        public readonly EndPoint EndPoint;
+        private readonly Config config;
+
+        public Connection(EndPoint endPoint, Config config)
         {
             EndPoint = endPoint ?? throw new ArgumentNullException(nameof(endPoint));
+            this.config = config;
+
+            State = ConnectionState.Created;
+        }
+
+        public float LastRecvPacketTime { get; internal set; }
+
+        public void ChangeState(ConnectionState state)
+        {
+            switch (state)
+            {
+                case ConnectionState.Connected:
+                    logger.Assert(State == ConnectionState.Created || State == ConnectionState.Connecting);
+                    break;
+
+                case ConnectionState.Connecting:
+                    logger.Assert(State == ConnectionState.Created);
+                    break;
+
+                case ConnectionState.Disconnected:
+                    logger.Assert(State == ConnectionState.Connected);
+                    break;
+            }
+
+            if (logger.LogEnabled()) logger.Log($"{EndPoint} changed state from {State} to {state}");
+            State = state;
         }
     }
 

@@ -64,10 +64,12 @@ namespace Mirage
             bytesReceived = socket.ReceiveFrom(buffer, ref endPoint);
         }
 
-        public void Send(EndPoint endPoint, byte[] data)
+        public void Send(EndPoint endPoint, byte[] data, int? length = null)
         {
+            int size = length ?? data.Length;
             // todo check disconnected
-            socket.SendTo(data, (IPEndPoint)endPoint);
+            // todo what SocketFlags??
+            socket.SendTo(data, size, SocketFlags.None, (IPEndPoint)endPoint);
         }
     }
 }

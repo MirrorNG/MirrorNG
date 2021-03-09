@@ -40,7 +40,6 @@ namespace Mirage.SocketLayer
         /// Sends to 
         /// </summary>
         /// <param name="data"></param>
-        void Send(EndPoint endPoint, byte[] data);
-
+        void Send(EndPoint endPoint, byte[] data, int? length);
     }
 }
