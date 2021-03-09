@@ -66,7 +66,7 @@ namespace Mirage
         void Close();
 
         // todo do we ever need to bind to endpoint? (rather than null)
-        void Blind(EndPoint endPoint);
+        void Bind(EndPoint endPoint);
     }
 
     public sealed class Connection
