@@ -62,6 +62,11 @@ namespace Mirage
         /// </summary>
         /// <param name="data"></param>
         void RawSend(EndPoint endPoint, byte[] data);
+
+        void Close();
+
+        // todo do we ever need to bind to endpoint? (rather than null)
+        void Blind(EndPoint endPoint);
     }
 
     public sealed class Connection
