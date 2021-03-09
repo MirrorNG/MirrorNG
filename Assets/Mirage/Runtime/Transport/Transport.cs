@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
@@ -11,15 +12,55 @@ namespace Mirage
     /// </summary>
     public interface ISocket
     {
+        /// <summary>
+        /// Checks for new messages
+        /// </summary>
+        void Poll();
 
+        /// <summary>
+        /// Gets next Message
+        /// <para>Should be called after Poll</para>
+        /// </summary>
+        /// <param name="data">recieved data</param>
+        /// <returns>true if more message to be Recieve</returns>
+        bool RawRecieve(out EndPoint endPoint, out byte[] data);
+
+        /// <summary>
+        /// Sends to 
+        /// </summary>
+        /// <param name="data"></param>
+        void RawSend(EndPoint endPoint, byte[] data);
+    }
+
+    public sealed class Connection
+    {
+        public readonly EndPoint EndPoint;
+
+        public Connection(EndPoint endPoint)
+        {
+            EndPoint = endPoint ?? throw new ArgumentNullException(nameof(endPoint));
+        }
     }
 
     /// <summary>
     /// Controls flow of data in/out of mirage, Uses <see cref="ISocket"/>
     /// </summary>
-    public class Peer
+    public sealed class Peer
     {
+        readonly ISocket socket;
 
+        readonly Dictionary<EndPoint, Connection> connections;
+
+
+        public Peer(ISocket socket)
+        {
+            this.socket = socket ?? throw new ArgumentNullException(nameof(socket));
+        }
+
+        public void Send(Connection connection, byte[] data)
+        {
+            socket.RawSend(connection.EndPoint, data);
+        }
     }
 
     /// <summary>
