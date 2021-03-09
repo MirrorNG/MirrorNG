@@ -26,14 +26,14 @@ namespace Mirage
             return socket.Poll(0, SelectMode.SelectRead);
         }
 
-        public void RawRecieve(byte[] buffer, ref EndPoint endPoint, out int bytesReceived)
+        public void Recieve(byte[] buffer, ref EndPoint endPoint, out int bytesReceived)
         {
             // todo do we need to set if null
             endPoint = endPoint ?? new IPEndPoint(IPAddress.Any, 0);
             bytesReceived = socket.ReceiveFrom(buffer, ref endPoint);
         }
 
-        public void RawSend(EndPoint endPoint, byte[] data)
+        public void Send(EndPoint endPoint, byte[] data)
         {
             // todo check disconnected
             socket.SendTo(data, (IPEndPoint)endPoint);
@@ -55,13 +55,13 @@ namespace Mirage
         /// <para>Should be called after Poll</para>
         /// </summary>
         /// <param name="data">recieved data</param>
-        void RawRecieve(byte[] data, ref EndPoint endPoint, out int bytesReceived);
+        void Recieve(byte[] data, ref EndPoint endPoint, out int bytesReceived);
 
         /// <summary>
         /// Sends to 
         /// </summary>
         /// <param name="data"></param>
-        void RawSend(EndPoint endPoint, byte[] data);
+        void Send(EndPoint endPoint, byte[] data);
 
         void Close();
 
@@ -99,7 +99,7 @@ namespace Mirage
 
         public void Send(Connection connection, byte[] data)
         {
-            socket.RawSend(connection.EndPoint, data);
+            socket.Send(connection.EndPoint, data);
         }
 
         public void ReceiveLoop()
@@ -109,7 +109,7 @@ namespace Mirage
             {
                 //todo do we need to pass in endpoint?
                 EndPoint endPoint = null;
-                socket.RawRecieve(buffer, ref endPoint, out int length);
+                socket.Recieve(buffer, ref endPoint, out int length);
 
                 IMessageReceiver receiver = getReceiver();
                 receiver.TransportReceive(new ArraySegment<byte>(buffer, 0, length));
