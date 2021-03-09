@@ -1,29 +1,70 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace Mirage
 {
+    public class UDPSocket : ISocket
+    {
+        readonly int MaximumTransmissionUnit;
+
+        Socket socket;
+
+        public UDPSocket(int maximumTransmissionUnit)
+        {
+            MaximumTransmissionUnit = maximumTransmissionUnit;
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        }
+
+        /// <summary>
+        /// Is message avaliable
+        /// </summary>
+        /// <returns>true if data to read</returns>
+        public bool Poll()
+        {
+            return socket.Poll(0, SelectMode.SelectRead);
+        }
+
+        public void RawRecieve(out EndPoint endPoint, out byte[] data)
+        {
+            data = GetBuffer();
+            endPoint = new IPEndPoint(IPAddress.Any, 0);
+            socket.ReceiveFrom(data, ref endPoint);
+        }
+
+        public void RawSend(EndPoint endPoint, byte[] data)
+        {
+            // todo check disconnected
+            socket.SendTo(data, (IPEndPoint)endPoint);
+        }
+
+
+        private byte[] GetBuffer()
+        {
+            return new byte[MaximumTransmissionUnit];
+        }
+    }
     /// <summary>
     /// Link between Mirage and the outside world...
     /// </summary>
     public interface ISocket
     {
         /// <summary>
-        /// Checks for new messages
+        /// Is message avaliable
         /// </summary>
-        void Poll();
+        /// <returns>true if data to read</returns>
+        bool Poll();
 
         /// <summary>
         /// Gets next Message
         /// <para>Should be called after Poll</para>
         /// </summary>
         /// <param name="data">recieved data</param>
-        /// <returns>true if more message to be Recieve</returns>
-        bool RawRecieve(out EndPoint endPoint, out byte[] data);
+        void RawRecieve(out EndPoint endPoint, out byte[] data);
 
         /// <summary>
         /// Sends to 
@@ -47,6 +88,9 @@ namespace Mirage
     /// </summary>
     public sealed class Peer
     {
+        // todo SendUnreliable
+        // tood SendNotify
+
         readonly ISocket socket;
 
         readonly Dictionary<EndPoint, Connection> connections;
