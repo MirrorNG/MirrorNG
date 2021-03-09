@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 
 namespace Mirage
 {
@@ -26,9 +26,9 @@ namespace Mirage
         /// <param name="data"></param>
         void Send(EndPoint endPoint, byte[] data);
 
-        void Close();
 
-        // todo do we ever need to bind to endpoint? (rather than null)
         void Bind(EndPoint endPoint);
+
+        void Close();
     }
 }
