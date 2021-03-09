@@ -10,13 +10,10 @@ namespace Mirage
 {
     public class UDPSocket : ISocket
     {
-        readonly int MaximumTransmissionUnit;
-
         Socket socket;
 
-        public UDPSocket(int maximumTransmissionUnit)
+        public UDPSocket()
         {
-            MaximumTransmissionUnit = maximumTransmissionUnit;
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         }
 
@@ -29,23 +26,17 @@ namespace Mirage
             return socket.Poll(0, SelectMode.SelectRead);
         }
 
-        public void RawRecieve(out EndPoint endPoint, out byte[] data)
+        public void RawRecieve(byte[] buffer, ref EndPoint endPoint)
         {
-            data = GetBuffer();
-            endPoint = new IPEndPoint(IPAddress.Any, 0);
-            socket.ReceiveFrom(data, ref endPoint);
+            // todo do we need to set if null
+            endPoint = endPoint ?? new IPEndPoint(IPAddress.Any, 0);
+            socket.ReceiveFrom(buffer, ref endPoint);
         }
 
         public void RawSend(EndPoint endPoint, byte[] data)
         {
             // todo check disconnected
             socket.SendTo(data, (IPEndPoint)endPoint);
-        }
-
-
-        private byte[] GetBuffer()
-        {
-            return new byte[MaximumTransmissionUnit];
         }
     }
     /// <summary>
@@ -64,7 +55,7 @@ namespace Mirage
         /// <para>Should be called after Poll</para>
         /// </summary>
         /// <param name="data">recieved data</param>
-        void RawRecieve(out EndPoint endPoint, out byte[] data);
+        void RawRecieve(byte[] data, ref EndPoint endPoint);
 
         /// <summary>
         /// Sends to 
