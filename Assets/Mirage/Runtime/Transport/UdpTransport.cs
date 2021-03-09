@@ -36,6 +36,11 @@ namespace Mirage
             socket.Bind(endPoint);
         }
 
+        public void Connect(EndPoint endPoint)
+        {
+            socket.Connect(endPoint);
+        }
+
         public void Close()
         {
             socket.Close();

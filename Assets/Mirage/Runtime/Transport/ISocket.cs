@@ -8,6 +8,22 @@ namespace Mirage
     public interface ISocket
     {
         /// <summary>
+        /// Starts listens for data on an endpoint
+        /// <para>Used by Server to accpet data from clients</para>
+        /// </summary>
+        /// <param name="endPoint"></param>
+        void Bind(EndPoint endPoint);
+
+        /// <summary>
+        /// Connects to an endpoint
+        /// <para>Used by clients to connect to server</para>
+        /// </summary>
+        /// <param name="endPoint"></param>
+        void Connect(EndPoint endPoint);
+
+        void Close();
+
+        /// <summary>
         /// Is message avaliable
         /// </summary>
         /// <returns>true if data to read</returns>
@@ -26,9 +42,5 @@ namespace Mirage
         /// <param name="data"></param>
         void Send(EndPoint endPoint, byte[] data);
 
-
-        void Bind(EndPoint endPoint);
-
-        void Close();
     }
 }
