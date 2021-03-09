@@ -37,17 +37,36 @@ namespace Mirage
                 EndPoint endPoint = null;
                 socket.Recieve(buffer, ref endPoint, out int length);
 
-                IMessageReceiver receiver = getReceiver();
-                receiver.TransportReceive(new ArraySegment<byte>(buffer, 0, length));
+                var segment = new ArraySegment<byte>(buffer, 0, length);
+                if (connections.TryGetValue(endPoint, out Connection connection))
+                {
+                    HandleMessage(connection, segment);
+                }
+                else
+                {
+                    HandleNewConnection(endPoint, segment);
+                }
             }
         }
 
-        private IMessageReceiver getReceiver()
+        private byte[] getBuffer()
         {
             throw new NotImplementedException();
         }
 
-        private byte[] getBuffer()
+        private void HandleMessage(Connection connection, ArraySegment<byte> segment)
+        {
+            IMessageReceiver receiver = getReceiver(connection);
+            receiver.TransportReceive(segment);
+        }
+
+        private void HandleNewConnection(EndPoint endPoint, ArraySegment<byte> segment)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        private IMessageReceiver getReceiver(Connection connection)
         {
             throw new NotImplementedException();
         }
