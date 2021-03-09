@@ -62,9 +62,19 @@ namespace Mirage
 
         private void HandleNewConnection(EndPoint endPoint, ArraySegment<byte> segment)
         {
+            // ignore endpoint/packet that can't be validated
+            if (!Validate(endPoint, segment)) { return; }
+
             throw new NotImplementedException();
         }
 
+        private bool Validate(EndPoint endPoint, ArraySegment<byte> segment)
+        {
+            // todo do security stuff here:
+            // - simple key/phrase send from client with first message
+            // - hashcash??
+            return true;
+        }
 
         private IMessageReceiver getReceiver(Connection connection)
         {
