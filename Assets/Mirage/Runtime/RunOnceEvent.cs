@@ -79,7 +79,8 @@ namespace Mirage
     /// Version of <see cref="RunOnceEvent"/> with 1 argument
     /// <para>Create a non-generic class inheirting from this to use in inspector. Same rules as <see cref="UnityEvent"/></para>
     /// </summary>
-    /// <typeparam name="T0"></typeparam>
+    /// <typeparam name="T0">argument 0</typeparam>
+    /// <typeparam name="TEvent">UnityEvent</typeparam>
     [Serializable]
     public abstract class RunOnceEvent<T0, TEvent> : RunOnceEventBase, IRunOnceEvent<T0>
         where TEvent : UnityEvent<T0>, new()
