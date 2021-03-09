@@ -78,10 +78,11 @@ namespace Mirage
     /// The only job of Transport is to create a <see cref="ISocket"/> that will be used by mirage to send/recieve data.
     /// <para>This is a MonoBehaviour so can be attached in the inspector</para>
     /// </remarks>
+    // todo rename this to Transport when finished
     public abstract class TransportV2 : MonoBehaviour
     {
-        // todo rename this to Transport when finished
-        public abstract ISocket CreateSocket();
+        public abstract ISocket CreateClientSocket();
+        public abstract ISocket CreateServerSocket();
 
         public abstract bool ClientSupported { get; }
         public abstract bool ServerSupported { get; }

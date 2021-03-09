@@ -1,8 +1,27 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
+using UnityEngine;
 
 namespace Mirage
 {
+    public sealed class UdpTransport : TransportV2
+    {
+        public override ISocket CreateClientSocket()
+        {
+            return new UDPSocket();
+        }
+
+        public override ISocket CreateServerSocket()
+        {
+            return new UDPSocket();
+        }
+
+
+        public override bool ClientSupported => platformNotWebgl;
+        public override bool ServerSupported => platformNotWebgl;
+        private static bool platformNotWebgl => Application.platform != RuntimePlatform.WebGLPlayer;
+    }
+
     public class UDPSocket : ISocket
     {
         readonly Socket socket;
@@ -10,6 +29,17 @@ namespace Mirage
         public UDPSocket()
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        }
+
+        public void Bind(EndPoint endPoint)
+        {
+            socket.Bind(endPoint);
+        }
+
+        public void Close()
+        {
+            socket.Close();
+            socket.Dispose();
         }
 
         /// <summary>
