@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Mirage
+namespace Mirage.SocketLayer
 {
     /// <summary>
     /// Link between Mirage and the outside world...

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
 
-namespace Mirage
+namespace Mirage.SocketLayer
 {
     /// <summary>
     /// Controls flow of data in/out of mirage, Uses <see cref="ISocket"/>
