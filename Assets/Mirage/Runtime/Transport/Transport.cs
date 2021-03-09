@@ -101,7 +101,39 @@ namespace Mirage
         {
             socket.RawSend(connection.EndPoint, data);
         }
+
+        public void ReceiveLoop()
+        {
+            byte[] buffer = getBuffer();
+            while (socket.Poll())
+            {
+                //todo do we need to pass in endpoint?
+                EndPoint endPoint = null;
+                socket.RawRecieve(buffer, ref endPoint, out int length);
+
+                IMessageReceiver receiver = getReceiver();
+                receiver.TransportReceive(new ArraySegment<byte>(buffer, 0, length));
+            }
+        }
+
+        private IMessageReceiver getReceiver()
+        {
+            throw new NotImplementedException();
+        }
+
+        private byte[] getBuffer()
+        {
+            throw new NotImplementedException();
+        }
     }
+
+    // todo how should we use this?
+    public sealed class PeerDebug
+    {
+        public int ReceivedBytes { get; set; }
+        public int SentBytes { get; set; }
+    }
+
 
     /// <summary>
     /// Creates <see cref="ISocket"/>
@@ -112,6 +144,7 @@ namespace Mirage
     /// </remarks>
     public abstract class TransportV2 : MonoBehaviour
     {
+        // todo rename this to Transport when finished
         public abstract ISocket CreateSocket();
 
         public abstract bool ClientSupported { get; }

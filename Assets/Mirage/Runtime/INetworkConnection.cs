@@ -32,6 +32,9 @@ namespace Mirage
         /// </summary>
         /// <returns></returns>
         UniTask ProcessMessagesAsync();
+
+        // todo remove channel
+        void TransportReceive(ArraySegment<byte> data, int channel = default);
     }
 
     /// <summary>
