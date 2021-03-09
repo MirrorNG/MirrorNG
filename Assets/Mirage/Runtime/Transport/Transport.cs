@@ -7,9 +7,34 @@ using UnityEngine.Events;
 namespace Mirage
 {
     /// <summary>
-    /// Base transport class,  any transport should implement this class
-    /// and it's abstract methods
+    /// Link between Mirage and the outside world...
     /// </summary>
+    public interface ISocket
+    {
+
+    }
+
+    /// <summary>
+    /// Controls flow of data in/out of mirage, Uses <see cref="ISocket"/>
+    /// </summary>
+    public class Peer
+    {
+
+    }
+
+    /// <summary>
+    /// Creates <see cref="ISocket"/>
+    /// </summary>
+    /// <remarks>
+    /// The only job of Transport is to create a <see cref="ISocket"/> that will be used by mirage to send/recieve data.
+    /// <para>This is a MonoBehaviour so can be attached in the inspector</para>
+    /// </remarks>
+    public abstract class TransportV2 : MonoBehaviour
+    {
+        public abstract ISocket CreateSocket();
+    }
+
+    [System.Obsolete("Use TransportV2, Peer, and ISocket instead", true)]
     public abstract class Transport : MonoBehaviour
     {
         public class ConnectEvent : UnityEvent<IConnection> { }
