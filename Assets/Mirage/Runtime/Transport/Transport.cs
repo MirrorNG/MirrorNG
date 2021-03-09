@@ -10,7 +10,7 @@ namespace Mirage
 {
     public class UDPSocket : ISocket
     {
-        Socket socket;
+        readonly Socket socket;
 
         public UDPSocket()
         {
@@ -26,11 +26,11 @@ namespace Mirage
             return socket.Poll(0, SelectMode.SelectRead);
         }
 
-        public void RawRecieve(byte[] buffer, ref EndPoint endPoint)
+        public void RawRecieve(byte[] buffer, ref EndPoint endPoint, out int bytesReceived)
         {
             // todo do we need to set if null
             endPoint = endPoint ?? new IPEndPoint(IPAddress.Any, 0);
-            socket.ReceiveFrom(buffer, ref endPoint);
+            bytesReceived = socket.ReceiveFrom(buffer, ref endPoint);
         }
 
         public void RawSend(EndPoint endPoint, byte[] data)
@@ -55,7 +55,7 @@ namespace Mirage
         /// <para>Should be called after Poll</para>
         /// </summary>
         /// <param name="data">recieved data</param>
-        void RawRecieve(byte[] data, ref EndPoint endPoint);
+        void RawRecieve(byte[] data, ref EndPoint endPoint, out int bytesReceived);
 
         /// <summary>
         /// Sends to 
