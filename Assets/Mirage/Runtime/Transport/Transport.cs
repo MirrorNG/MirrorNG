@@ -113,6 +113,9 @@ namespace Mirage
     public abstract class TransportV2 : MonoBehaviour
     {
         public abstract ISocket CreateSocket();
+
+        public abstract bool ClientSupported { get; }
+        public abstract bool ServerSupported { get; }
     }
 
     [System.Obsolete("Use TransportV2, Peer, and ISocket instead", true)]
