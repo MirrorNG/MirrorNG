@@ -7,6 +7,9 @@ namespace Mirage
 {
     public sealed class UdpTransport : TransportV2
     {
+        [SerializeField] string address;
+        [SerializeField] int port;
+
         public override ISocket CreateClientSocket()
         {
             return new UDPSocket();
@@ -17,6 +20,14 @@ namespace Mirage
             return new UDPSocket();
         }
 
+        public override EndPoint GetBindEndPoint()
+        {
+            return new IPEndPoint(IPAddress.Any, port);
+        }
+        public override EndPoint GetConnectEndPoint()
+        {
+            return new IPEndPoint(IPAddress.Parse(address), port);
+        }
 
         public override bool ClientSupported => platformNotWebgl;
         public override bool ServerSupported => platformNotWebgl;
