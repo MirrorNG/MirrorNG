@@ -24,21 +24,21 @@ namespace Mirage.Authenticators
             Authenticator.OnServerAuthenticated += HandleServerAuthenticated;
         }
 
-        private readonly HashSet<INetworkConnection> pendingAuthentication = new HashSet<INetworkConnection>();
+        private readonly HashSet<INetworkPlayer> pendingAuthentication = new HashSet<INetworkPlayer>();
 
-        private void HandleServerAuthenticated(INetworkConnection connection)
+        private void HandleServerAuthenticated(INetworkPlayer connection)
         {
             pendingAuthentication.Remove(connection);
             base.OnClientAuthenticate(connection);
         }
 
-        private void HandleClientAuthenticated(INetworkConnection connection)
+        private void HandleClientAuthenticated(INetworkPlayer connection)
         {
             pendingAuthentication.Remove(connection);
             base.OnServerAuthenticate(connection);
         }
 
-        public override void OnClientAuthenticate(INetworkConnection conn)
+        public override void OnClientAuthenticate(INetworkPlayer conn)
         {
             pendingAuthentication.Add(conn);
             Authenticator.OnClientAuthenticate(conn);
@@ -47,7 +47,7 @@ namespace Mirage.Authenticators
                 StartCoroutine(BeginAuthentication(conn));
         }
 
-        public override void OnServerAuthenticate(INetworkConnection conn)
+        public override void OnServerAuthenticate(INetworkPlayer conn)
         {
             pendingAuthentication.Add(conn);
             Authenticator.OnServerAuthenticate(conn);
@@ -55,7 +55,7 @@ namespace Mirage.Authenticators
                 StartCoroutine(BeginAuthentication(conn));
         }
 
-        IEnumerator BeginAuthentication(INetworkConnection conn)
+        IEnumerator BeginAuthentication(INetworkPlayer conn)
         {
             if (logger.LogEnabled()) logger.Log($"Authentication countdown started {conn} {Timeout}");
 

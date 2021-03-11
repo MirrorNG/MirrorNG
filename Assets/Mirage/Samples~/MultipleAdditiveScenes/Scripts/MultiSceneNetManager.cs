@@ -35,7 +35,7 @@ namespace Mirage.Examples.MultipleAdditiveScenes
         /// <para>The default implementation for this function creates a new player object from the playerPrefab.</para>
         /// </summary>
         /// <param name="conn">Connection from client.</param>
-        public void OnServerAddPlayer(INetworkConnection conn)
+        public void OnServerAddPlayer(INetworkPlayer conn)
         {
             // This delay is really for the host player that loads too fast for the server to have subscene loaded
             StartCoroutine(AddPlayerDelayed(conn));
@@ -43,7 +43,7 @@ namespace Mirage.Examples.MultipleAdditiveScenes
 
         int playerId = 1;
 
-        IEnumerator AddPlayerDelayed(INetworkConnection conn)
+        IEnumerator AddPlayerDelayed(INetworkPlayer conn)
         {
             yield return new WaitForSeconds(.5f);
             conn.Send(new SceneMessage { scenePath = gameScene, sceneOperation = SceneOperation.LoadAdditive });

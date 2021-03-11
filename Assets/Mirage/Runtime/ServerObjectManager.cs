@@ -101,13 +101,13 @@ namespace Mirage
                 DirtyObjects.Add(obj);
         }
 
-        internal void RegisterMessageHandlers(INetworkConnection connection)
+        internal void RegisterMessageHandlers(INetworkPlayer connection)
         {
             connection.RegisterHandler<ReadyMessage>(OnClientReadyMessage);
             connection.RegisterHandler<ServerRpcMessage>(OnServerRpcMessage);
         }
 
-        void OnAuthenticated(INetworkConnection connection)
+        void OnAuthenticated(INetworkPlayer connection)
         {
             RegisterMessageHandlers(connection);
         }
@@ -181,7 +181,7 @@ namespace Mirage
         /// <param name="assetId"></param>
         /// <param name="keepAuthority">Does the previous player remain attached to this connection?</param>
         /// <returns></returns>
-        public bool ReplacePlayerForConnection(INetworkConnection conn, NetworkClient client, GameObject player, Guid assetId, bool keepAuthority = false)
+        public bool ReplacePlayerForConnection(INetworkPlayer conn, NetworkClient client, GameObject player, Guid assetId, bool keepAuthority = false)
         {
             NetworkIdentity identity = GetNetworkIdentity(player);
             identity.AssetId = assetId;
@@ -197,12 +197,12 @@ namespace Mirage
         /// <param name="player">Player object spawned for the player.</param>
         /// <param name="keepAuthority">Does the previous player remain attached to this connection?</param>
         /// <returns></returns>
-        public bool ReplacePlayerForConnection(INetworkConnection conn, NetworkClient client, GameObject player, bool keepAuthority = false)
+        public bool ReplacePlayerForConnection(INetworkPlayer conn, NetworkClient client, GameObject player, bool keepAuthority = false)
         {
             return InternalReplacePlayerForConnection(conn, client, player, keepAuthority);
         }
 
-        void SpawnObserversForConnection(INetworkConnection conn)
+        void SpawnObserversForConnection(INetworkPlayer conn)
         {
             if (logger.LogEnabled()) logger.Log("Spawning " + SpawnedObjects.Count + " objects for conn " + conn);
 
@@ -239,7 +239,7 @@ namespace Mirage
         /// <param name="player">Player object spawned for the player.</param>
         /// <param name="assetId"></param>
         /// <returns></returns>
-        public bool AddPlayerForConnection(INetworkConnection conn, GameObject player, Guid assetId)
+        public bool AddPlayerForConnection(INetworkPlayer conn, GameObject player, Guid assetId)
         {
             NetworkIdentity identity = GetNetworkIdentity(player);
             identity.AssetId = assetId;
@@ -254,7 +254,7 @@ namespace Mirage
         /// <param name="client">Client associated to the player.</param>
         /// <param name="player">Player object spawned for the player.</param>
         /// <returns></returns>
-        public bool AddPlayerForConnection(INetworkConnection conn, GameObject player)
+        public bool AddPlayerForConnection(INetworkPlayer conn, GameObject player)
         {
             NetworkIdentity identity = player.GetComponent<NetworkIdentity>();
             if (identity is null)
@@ -312,7 +312,7 @@ namespace Mirage
             }
         }
 
-        internal bool InternalReplacePlayerForConnection(INetworkConnection conn, NetworkClient client, GameObject player, bool keepAuthority)
+        internal bool InternalReplacePlayerForConnection(INetworkPlayer conn, NetworkClient client, GameObject player, bool keepAuthority)
         {
             NetworkIdentity identity = player.GetComponent<NetworkIdentity>();
             if (identity is null)
@@ -372,13 +372,13 @@ namespace Mirage
             return identity;
         }
 
-        internal void ShowForConnection(NetworkIdentity identity, INetworkConnection conn)
+        internal void ShowForConnection(NetworkIdentity identity, INetworkPlayer conn)
         {
             if (conn.IsReady)
                 SendSpawnMessage(identity, conn);
         }
 
-        internal void HideForConnection(NetworkIdentity identity, INetworkConnection conn)
+        internal void HideForConnection(NetworkIdentity identity, INetworkPlayer conn)
         {
             conn.Send(new ObjectHideMessage { netId = identity.NetId });
         }
@@ -388,7 +388,7 @@ namespace Mirage
         /// </summary>
         /// <param name="conn">The connection of the client to remove from</param>
         /// <param name="destroyServerObject">Indicates whether the server object should be destroyed</param>
-        public void RemovePlayerForConnection(INetworkConnection conn, bool destroyServerObject = false)
+        public void RemovePlayerForConnection(INetworkPlayer conn, bool destroyServerObject = false)
         {
             if (conn.Identity != null)
             {
@@ -410,7 +410,7 @@ namespace Mirage
         /// </summary>
         /// <param name="conn"></param>
         /// <param name="msg"></param>
-        void OnServerRpcMessage(INetworkConnection conn, ServerRpcMessage msg)
+        void OnServerRpcMessage(INetworkPlayer conn, ServerRpcMessage msg)
         {
             if (!SpawnedObjects.TryGetValue(msg.netId, out NetworkIdentity identity) || identity is null)
             {
@@ -442,7 +442,7 @@ namespace Mirage
             }
         }
 
-        internal void SpawnObject(GameObject obj, INetworkConnection ownerConnection)
+        internal void SpawnObject(GameObject obj, INetworkPlayer ownerConnection)
         {
             if (!Server || !Server.Active)
             {
@@ -479,7 +479,7 @@ namespace Mirage
             identity.RebuildObservers(true);
         }
 
-        internal void SendSpawnMessage(NetworkIdentity identity, INetworkConnection conn)
+        internal void SendSpawnMessage(NetworkIdentity identity, INetworkPlayer conn)
         {
             // for easier debugging
             if (logger.LogEnabled()) logger.Log("Server SendSpawnMessage: name=" + identity.name + " sceneId=" + identity.sceneId.ToString("X") + " netid=" + identity.NetId);
@@ -588,7 +588,7 @@ namespace Mirage
         /// <param name="assetId">The assetId of the object to spawn. Used for custom spawn handlers.</param>
         /// <param name="client">The client associated to the object.</param>
         /// <param name="ownerConnection">The connection that has authority over the object</param>
-        public void Spawn(GameObject obj, Guid assetId, INetworkConnection ownerConnection = null)
+        public void Spawn(GameObject obj, Guid assetId, INetworkPlayer ownerConnection = null)
         {
             if (VerifyCanSpawn(obj))
             {
@@ -605,7 +605,7 @@ namespace Mirage
         /// <param name="obj">Game object with NetworkIdentity to spawn.</param>
         /// <param name="client">Client associated to the object.</param>
         /// <param name="ownerConnection">The connection that has authority over the object</param>
-        public void Spawn(GameObject obj, INetworkConnection ownerConnection = null)
+        public void Spawn(GameObject obj, INetworkPlayer ownerConnection = null)
         {
             if (VerifyCanSpawn(obj))
             {
@@ -732,7 +732,7 @@ namespace Mirage
         /// <para>When a client has signaled that it is ready, this method tells the server that the client is ready to receive spawned objects and state synchronization updates. This is usually called in a handler for the SYSTEM_READY message. If there is not specific action a game needs to take for this message, relying on the default ready handler function is probably fine, so this call wont be needed.</para>
         /// </summary>
         /// <param name="conn">The connection of the client to make ready.</param>
-        public void SetClientReady(INetworkConnection conn)
+        public void SetClientReady(INetworkPlayer conn)
         {
             if (logger.LogEnabled()) logger.Log("SetClientReadyInternal for conn:" + conn);
 
@@ -750,7 +750,7 @@ namespace Mirage
         /// </summary>
         public void SetAllClientsNotReady()
         {
-            foreach (INetworkConnection conn in Server.connections)
+            foreach (INetworkPlayer conn in Server.connections)
             {
                 SetClientNotReady(conn);
             }
@@ -761,7 +761,7 @@ namespace Mirage
         /// <para>Clients that are not ready do not receive spawned objects or state synchronization updates. They client can be made ready again by calling SetClientReady().</para>
         /// </summary>
         /// <param name="conn">The connection of the client to make not ready.</param>
-        public void SetClientNotReady(INetworkConnection conn)
+        public void SetClientNotReady(INetworkPlayer conn)
         {
             if (conn.IsReady)
             {
@@ -778,7 +778,7 @@ namespace Mirage
         /// </summary>
         /// <param name="conn"></param>
         /// <param name="msg"></param>
-        void OnClientReadyMessage(INetworkConnection conn, ReadyMessage msg)
+        void OnClientReadyMessage(INetworkPlayer conn, ReadyMessage msg)
         {
             if (logger.LogEnabled()) logger.Log("Default handler for ready message from " + conn);
             SetClientReady(conn);

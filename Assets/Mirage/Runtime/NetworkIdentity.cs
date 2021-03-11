@@ -144,7 +144,7 @@ namespace Mirage
         /// <summary>
         /// The set of network connections (players) that can see this object.
         /// </summary>
-        public readonly HashSet<INetworkConnection> observers = new HashSet<INetworkConnection>();
+        public readonly HashSet<INetworkPlayer> observers = new HashSet<INetworkPlayer>();
 
         /// <summary>
         /// Unique identifier for this particular object instance, used for tracking objects between networked clients and the server.
@@ -173,7 +173,7 @@ namespace Mirage
         /// <summary>
         /// The NetworkConnection associated with this NetworkIdentity. This is only valid for player objects on a local client.
         /// </summary>
-        public INetworkConnection ConnectionToServer { get; internal set; }
+        public INetworkPlayer ConnectionToServer { get; internal set; }
 
         /// <summary>
         /// The NetworkClient associated with this NetworkIdentity.
@@ -185,13 +185,13 @@ namespace Mirage
         /// </summary>
         public ClientObjectManager ClientObjectManager;
 
-        INetworkConnection _connectionToClient;
+        INetworkPlayer _connectionToClient;
 
         /// <summary>
         /// The NetworkConnection associated with this <see cref="NetworkIdentity">NetworkIdentity.</see> This is valid for player and other owned objects in the server.
         /// <para>Use it to return details such as the connection&apos;s identity, IP address and ready status.</para>
         /// </summary>
-        public INetworkConnection ConnectionToClient
+        public INetworkPlayer ConnectionToClient
         {
             get => _connectionToClient;
 
@@ -365,7 +365,7 @@ namespace Mirage
         /// used when adding players
         /// </summary>
         /// <param name="conn"></param>
-        internal void SetClientOwner(INetworkConnection conn)
+        internal void SetClientOwner(INetworkPlayer conn)
         {
             // do nothing if it already has an owner
             if (ConnectionToClient != null && conn != ConnectionToClient)
@@ -383,7 +383,7 @@ namespace Mirage
         /// <param name="conn">The network connection that is gaining or losing authority.</param>
         /// <param name="identity">The object whose client authority status is being changed.</param>
         /// <param name="authorityState">The new state of client authority of the object for the connection.</param>
-        public delegate void ClientAuthorityCallback(INetworkConnection conn, NetworkIdentity identity, bool authorityState);
+        public delegate void ClientAuthorityCallback(INetworkPlayer conn, NetworkIdentity identity, bool authorityState);
 
         /// <summary>
         /// A callback that can be populated to be notified when the client-authority state of objects changes.
@@ -396,7 +396,7 @@ namespace Mirage
         /// this is used when a connection is destroyed, since the "observers" property is read-only
         /// </summary>
         /// <param name="conn"></param>
-        internal void RemoveObserverInternal(INetworkConnection conn)
+        internal void RemoveObserverInternal(INetworkPlayer conn)
         {
             observers.Remove(conn);
         }
@@ -733,7 +733,7 @@ namespace Mirage
         /// </summary>
         /// <param name="conn"></param>
         /// <returns></returns>
-        internal bool OnCheckObserver(INetworkConnection conn)
+        internal bool OnCheckObserver(INetworkPlayer conn)
         {
             if (Visibility != null)
             {
@@ -906,7 +906,7 @@ namespace Mirage
         /// <param name="invokeType"></param>
         /// <param name="reader"></param>
         /// <param name="senderConnection"></param>
-        internal void HandleRemoteCall(Skeleton skeleton, int componentIndex, NetworkReader reader, INetworkConnection senderConnection = null, int replyId = 0)
+        internal void HandleRemoteCall(Skeleton skeleton, int componentIndex, NetworkReader reader, INetworkPlayer senderConnection = null, int replyId = 0)
         {
             // find the right component to invoke the function on
             if (componentIndex >= 0 && componentIndex < NetworkBehaviours.Length)
@@ -925,14 +925,14 @@ namespace Mirage
         /// </summary>
         internal void ClearObservers()
         {
-            foreach (INetworkConnection conn in observers)
+            foreach (INetworkPlayer conn in observers)
             {
                 conn.RemoveFromVisList(this);
             }
             observers.Clear();
         }
 
-        internal void AddObserver(INetworkConnection conn)
+        internal void AddObserver(INetworkPlayer conn)
         {
             if (observers.Contains(conn))
             {
@@ -958,7 +958,7 @@ namespace Mirage
         /// <param name="observersSet"></param>
         /// <param name="initialize"></param>
         /// <returns></returns>
-        internal bool GetNewObservers(HashSet<INetworkConnection> observersSet, bool initialize)
+        internal bool GetNewObservers(HashSet<INetworkPlayer> observersSet, bool initialize)
         {
             observersSet.Clear();
 
@@ -981,7 +981,7 @@ namespace Mirage
         internal void AddAllReadyServerConnectionsToObservers()
         {
             // add all server connections
-            foreach (INetworkConnection conn in Server.connections)
+            foreach (INetworkPlayer conn in Server.connections)
             {
                 if (conn.IsReady)
                     AddObserver(conn);
@@ -994,7 +994,7 @@ namespace Mirage
             }
         }
 
-        static readonly HashSet<INetworkConnection> newObservers = new HashSet<INetworkConnection>();
+        static readonly HashSet<INetworkPlayer> newObservers = new HashSet<INetworkPlayer>();
 
         /// <summary>
         /// This causes the set of players that can see this object to be rebuild.
@@ -1036,7 +1036,7 @@ namespace Mirage
             if (changed)
             {
                 observers.Clear();
-                foreach (INetworkConnection conn in newObservers)
+                foreach (INetworkPlayer conn in newObservers)
                 {
                     if (conn != null && conn.IsReady)
                         observers.Add(conn);
@@ -1073,7 +1073,7 @@ namespace Mirage
         // remove all old .observers that aren't in newObservers anymore
         bool RemoveOldObservers(bool changed)
         {
-            foreach (INetworkConnection conn in observers)
+            foreach (INetworkPlayer conn in observers)
             {
                 if (!newObservers.Contains(conn))
                 {
@@ -1092,7 +1092,7 @@ namespace Mirage
         // add all newObservers that aren't in .observers yet
         bool AddNewObservers(bool initialize, bool changed)
         {
-            foreach (INetworkConnection conn in newObservers)
+            foreach (INetworkPlayer conn in newObservers)
             {
                 // only add ready connections.
                 // otherwise the player might not be in the world yet or anymore
@@ -1116,7 +1116,7 @@ namespace Mirage
         /// <para>Authority can be removed with RemoveClientAuthority. Only one client can own an object at any time. This does not need to be called for player objects, as their authority is setup automatically.</para>
         /// </summary>
         /// <param name="conn">	The connection of the client to assign authority to.</param>
-        public void AssignClientAuthority(INetworkConnection conn)
+        public void AssignClientAuthority(INetworkPlayer conn)
         {
             if (!IsServer)
             {
@@ -1163,7 +1163,7 @@ namespace Mirage
             {
                 clientAuthorityCallback?.Invoke(ConnectionToClient, this, false);
 
-                INetworkConnection previousOwner = ConnectionToClient;
+                INetworkPlayer previousOwner = ConnectionToClient;
 
                 ConnectionToClient = null;
 
@@ -1260,7 +1260,7 @@ namespace Mirage
             }
         }
 
-        static readonly List<INetworkConnection> connectionsExcludeSelf = new List<INetworkConnection>(100);
+        static readonly List<INetworkPlayer> connectionsExcludeSelf = new List<INetworkPlayer>(100);
 
         /// <summary>
         /// this is like SendToReady - but it doesn't check the ready flag on the connection.
@@ -1284,7 +1284,7 @@ namespace Mirage
             else
             {
                 connectionsExcludeSelf.Clear();
-                foreach (INetworkConnection conn in observers)
+                foreach (INetworkPlayer conn in observers)
                 {
                     if (ConnectionToClient != conn)
                     {

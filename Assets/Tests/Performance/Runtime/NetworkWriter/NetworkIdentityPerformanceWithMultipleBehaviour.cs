@@ -20,7 +20,7 @@ namespace Mirage.Tests.Performance
         {
             gameObject = new GameObject();
             identity = gameObject.AddComponent<NetworkIdentity>();
-            identity.ConnectionToClient = Substitute.For<INetworkConnection>();
+            identity.ConnectionToClient = Substitute.For<INetworkPlayer>();
             identity.observers.Add(identity.ConnectionToClient);
             health = new Health[healthCount];
             for (int i = 0; i < healthCount; i++)

@@ -103,7 +103,7 @@ namespace Mirage
 
         #region Client
 
-        void RegisterClientMessages(INetworkConnection connection)
+        void RegisterClientMessages(INetworkPlayer connection)
         {
             connection.RegisterHandler<SceneMessage>(ClientSceneMessage);
             if (!Client.IsLocalClient)
@@ -113,7 +113,7 @@ namespace Mirage
             }
         }
 
-        void OnClientAuthenticated(INetworkConnection conn)
+        void OnClientAuthenticated(INetworkPlayer conn)
         {
             logger.Log("NetworkSceneManager.OnClientAuthenticated");
             RegisterClientMessages(conn);
@@ -125,7 +125,7 @@ namespace Mirage
                 Client.Authenticated?.RemoveListener(OnClientAuthenticated);
         }
 
-        internal void ClientSceneMessage(INetworkConnection conn, SceneMessage msg)
+        internal void ClientSceneMessage(INetworkPlayer conn, SceneMessage msg)
         {
             if (!Client.IsConnected)
             {
@@ -153,7 +153,7 @@ namespace Mirage
             ApplyOperationAsync(msg.scenePath, msg.sceneOperation).Forget();
         }
 
-        internal void ClientSceneReadyMessage(INetworkConnection conn, SceneReadyMessage msg)
+        internal void ClientSceneReadyMessage(INetworkPlayer conn, SceneReadyMessage msg)
         {
             logger.Log("ClientSceneReadyMessage");
 
@@ -162,7 +162,7 @@ namespace Mirage
                 clientLoadingOperation.allowSceneActivation = true;
         }
 
-        internal void ClientNotReadyMessage(INetworkConnection conn, NotReadyMessage msg)
+        internal void ClientNotReadyMessage(INetworkPlayer conn, NotReadyMessage msg)
         {
             logger.Log("NetworkSceneManager.OnClientNotReadyMessageInternal");
 
@@ -226,7 +226,7 @@ namespace Mirage
         #region Server
 
         // called after successful authentication
-        void OnServerAuthenticated(INetworkConnection conn)
+        void OnServerAuthenticated(INetworkPlayer conn)
         {
             logger.Log("NetworkSceneManager.OnServerAuthenticated");
 

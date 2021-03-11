@@ -10,8 +10,8 @@ namespace Mirage.Tests.ClientServer
         NetworkAuthenticator serverAuthenticator;
         NetworkAuthenticator clientAuthenticator;
 
-        Action<INetworkConnection> serverMockMethod;
-        Action<INetworkConnection> clientMockMethod;
+        Action<INetworkPlayer> serverMockMethod;
+        Action<INetworkPlayer> clientMockMethod;
 
 
         class NetworkAuthenticationImpl : NetworkAuthenticator { };
@@ -23,43 +23,43 @@ namespace Mirage.Tests.ClientServer
             server.authenticator = serverAuthenticator;
             client.authenticator = clientAuthenticator;
 
-            serverMockMethod = Substitute.For<Action<INetworkConnection>>();
+            serverMockMethod = Substitute.For<Action<INetworkPlayer>>();
             serverAuthenticator.OnServerAuthenticated += serverMockMethod;
 
-            clientMockMethod = Substitute.For<Action<INetworkConnection>>();
+            clientMockMethod = Substitute.For<Action<INetworkPlayer>>();
             clientAuthenticator.OnClientAuthenticated += clientMockMethod;
         }
 
         [Test]
         public void OnServerAuthenticateTest()
         {
-            serverAuthenticator.OnServerAuthenticate(Substitute.For<INetworkConnection>());
+            serverAuthenticator.OnServerAuthenticate(Substitute.For<INetworkPlayer>());
 
-            serverMockMethod.Received().Invoke(Arg.Any<INetworkConnection>());
+            serverMockMethod.Received().Invoke(Arg.Any<INetworkPlayer>());
         }
 
         [Test]
         public void OnServerAuthenticateInternalTest()
         {
-            serverAuthenticator.OnServerAuthenticateInternal(Substitute.For<INetworkConnection>());
+            serverAuthenticator.OnServerAuthenticateInternal(Substitute.For<INetworkPlayer>());
 
-            serverMockMethod.Received().Invoke(Arg.Any<INetworkConnection>());
+            serverMockMethod.Received().Invoke(Arg.Any<INetworkPlayer>());
         }
 
         [Test]
         public void OnClientAuthenticateTest()
         {
-            clientAuthenticator.OnClientAuthenticate(Substitute.For<INetworkConnection>());
+            clientAuthenticator.OnClientAuthenticate(Substitute.For<INetworkPlayer>());
 
-            clientMockMethod.Received().Invoke(Arg.Any<INetworkConnection>());
+            clientMockMethod.Received().Invoke(Arg.Any<INetworkPlayer>());
         }
 
         [Test]
         public void OnClientAuthenticateInternalTest()
         {
-            clientAuthenticator.OnClientAuthenticateInternal(Substitute.For<INetworkConnection>());
+            clientAuthenticator.OnClientAuthenticateInternal(Substitute.For<INetworkPlayer>());
 
-            clientMockMethod.Received().Invoke(Arg.Any<INetworkConnection>());
+            clientMockMethod.Received().Invoke(Arg.Any<INetworkPlayer>());
         }
 
         [Test]
@@ -77,13 +77,13 @@ namespace Mirage.Tests.ClientServer
         [Test]
         public void NetworkClientCallsAuthenticator()
         {
-            clientMockMethod.Received().Invoke(Arg.Any<INetworkConnection>());
+            clientMockMethod.Received().Invoke(Arg.Any<INetworkPlayer>());
         }
 
         [Test]
         public void NetworkServerCallsAuthenticator()
         {
-            clientMockMethod.Received().Invoke(Arg.Any<INetworkConnection>());
+            clientMockMethod.Received().Invoke(Arg.Any<INetworkPlayer>());
         }
     }
 }

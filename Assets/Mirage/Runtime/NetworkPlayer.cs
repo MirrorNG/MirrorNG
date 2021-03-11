@@ -1,162 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Cysharp.Threading.Tasks;
 using Mirage.SocketLayer;
 using UnityEngine;
 using UnityEngine.Assertions;
-using Time = UnityEngine.Time;
 
 namespace Mirage
 {
-    [NetworkMessage]
-    public struct NotifyAck
-    {
-    }
-
-
-    public class NofifyStuff : INotifySender, INotifyReceiver
-    {
-        public NetworkPlayer Player { get; }
-
-        public NofifyStuff(NetworkPlayer player)
-        {
-            lastNotifySentTime = Time.unscaledTime;
-            Player = player;
-        }
-
-
-        internal struct PacketEnvelope
-        {
-            internal ushort Sequence;
-            internal object Token;
-        }
-        const int ACK_MASK_BITS = sizeof(ulong) * 8;
-        const int WINDOW_SIZE = 512;
-        // packages will be acked no longer than this time;
-        public float NOTIFY_ACK_TIMEOUT = 0.3f;
-
-        private Sequencer sequencer = new Sequencer(16);
-        readonly Queue<PacketEnvelope> sendWindow = new Queue<PacketEnvelope>(WINDOW_SIZE);
-        private float lastNotifySentTime;
-
-        private ushort receiveSequence;
-        private ulong receiveMask;
-
-
-
-
-        /// <summary>
-        /// Sends a message, but notify when it is delivered or lost
-        /// </summary>
-        /// <typeparam name="T">type of message to send</typeparam>
-        /// <param name="message">message to send</param>
-        /// <param name="token">a arbitrary object that the sender will receive with their notification</param>
-        public void SendNotify<T>(T message, object token, int channelId = Channel.Unreliable)
-        {
-            if (sendWindow.Count == WINDOW_SIZE)
-            {
-                NotifyLost?.Invoke(Player, token);
-                return;
-            }
-
-            using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
-            {
-                var notifyPacket = new NotifyPacket
-                {
-                    Sequence = (ushort)sequencer.Next(),
-                    ReceiveSequence = receiveSequence,
-                    AckMask = receiveMask
-                };
-
-                sendWindow.Enqueue(new PacketEnvelope
-                {
-                    Sequence = notifyPacket.Sequence,
-                    Token = token
-                });
-
-                MessagePacker.Pack(notifyPacket, writer);
-                MessagePacker.Pack(message, writer);
-                NetworkDiagnostics.OnSend(message, channelId, writer.Length, 1);
-                Player.Send(writer.ToArraySegment(), channelId);
-                lastNotifySentTime = Time.unscaledTime;
-            }
-
-        }
-
-        internal void ReceiveNotify(NotifyPacket notifyPacket, NetworkReader networkReader, int channelId)
-        {
-            int sequenceDistance = (int)sequencer.Distance(notifyPacket.Sequence, receiveSequence);
-
-            // sequence is so far out of bounds we can't save, just kick him (or her!)
-            if (Math.Abs(sequenceDistance) > WINDOW_SIZE)
-            {
-                Player.Disconnect();
-                return;
-            }
-
-            // this message is old,  we already received
-            // a newer or duplicate packet.  Discard it
-            if (sequenceDistance <= 0)
-                return;
-
-            receiveSequence = notifyPacket.Sequence;
-
-            if (sequenceDistance >= ACK_MASK_BITS)
-                receiveMask = 1;
-            else
-                receiveMask = (receiveMask << sequenceDistance) | 1;
-
-            AckPackets(notifyPacket.ReceiveSequence, notifyPacket.AckMask);
-
-            int msgType = MessagePacker.UnpackId(networkReader);
-            Player.InvokeHandler(msgType, networkReader, channelId);
-
-            if (Time.unscaledTime - lastNotifySentTime > NOTIFY_ACK_TIMEOUT)
-            {
-                SendNotify(new NotifyAck(), null, channelId);
-            }
-        }
-
-        // the other end just sent us a message
-        // and it told us the latest message it got
-        // and the ack mask
-        private void AckPackets(ushort receiveSequence, ulong ackMask)
-        {
-            while (sendWindow.Count > 0)
-            {
-                PacketEnvelope envelope = sendWindow.Peek();
-
-                int distance = (int)sequencer.Distance(envelope.Sequence, receiveSequence);
-
-                if (distance > 0)
-                    break;
-
-                sendWindow.Dequeue();
-
-                // if any of these cases trigger, packet is most likely lost
-                if ((distance <= -ACK_MASK_BITS) || ((ackMask & (1UL << -distance)) == 0UL))
-                {
-                    NotifyLost?.Invoke(Player, envelope.Token);
-                }
-                else
-                {
-                    NotifyDelivered?.Invoke(Player, envelope.Token);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Raised when a message is delivered
-        /// </summary>
-        public event Action<INetworkConnection, object> NotifyDelivered;
-
-        /// <summary>
-        /// Raised when a message is lost
-        /// </summary>
-        public event Action<INetworkConnection, object> NotifyLost;
-    }
-
     /// <summary>
     /// A High level network connection. This is used for connections from client-to-server and for connection from server-to-client.
     /// </summary>
@@ -167,12 +17,12 @@ namespace Mirage
     /// <para>NetworkConnection objects also act as observers for networked objects. When a connection is an observer of a networked object with a NetworkIdentity, then the object will be visible to corresponding client for the connection, and incremental state changes will be sent to the client.</para>
     /// <para>There are many virtual functions on NetworkConnection that allow its behaviour to be customized. NetworkClient and NetworkServer can both be made to instantiate custom classes derived from NetworkConnection by setting their networkConnectionClass member variable.</para>
     /// </remarks>
-    public class NetworkPlayer : INetworkConnection
+    public class NetworkPlayer : INetworkPlayer
     {
         static readonly ILogger logger = LogFactory.GetLogger(typeof(NetworkPlayer));
 
         // Handles network messages on client and server
-        internal delegate void NetworkMessageDelegate(INetworkConnection conn, NetworkReader reader, int channelId);
+        internal delegate void NetworkMessageDelegate(INetworkPlayer conn, NetworkReader reader, int channelId);
 
         // internal so it can be tested
         private readonly HashSet<NetworkIdentity> visList = new HashSet<NetworkIdentity>();
@@ -189,6 +39,7 @@ namespace Mirage
         /// <para>Clients do not know their connectionId on the server, and do not know the connectionId of other clients on the server.</para>
         /// </remarks>
         private readonly Connection connection;
+        private readonly Peer peer;
 
         /// <summary>
         /// General purpose object to hold authentication data, character selection, tokens, etc.
@@ -202,9 +53,6 @@ namespace Mirage
         /// <para>A client that is ready is sent spawned objects by the server and updates to the state of spawned objects. A client that is not ready is not sent spawned objects.</para>
         /// </summary>
         public bool IsReady { get; set; }
-
-        public NofifyStuff NofifyStuff { get; }
-
 
         /// <summary>
         /// The NetworkIdentity for this connection.
@@ -224,14 +72,11 @@ namespace Mirage
         /// Creates a new NetworkConnection with the specified address and connectionId
         /// </summary>
         /// <param name="networkConnectionId"></param>
-        public NetworkPlayer(Connection connection)
+        public NetworkPlayer(Peer peer, Connection connection)
         {
             Assert.IsNotNull(connection);
             this.connection = connection;
-
-            // a black message to ensure a notify timeout
-            RegisterHandler<NotifyAck>(msg => { });
-            NofifyStuff = new NofifyStuff(this);
+            this.peer = peer;
         }
 
         /// <summary>
@@ -239,12 +84,13 @@ namespace Mirage
         /// </summary>
         public virtual void Disconnect()
         {
-            connection.Disconnect();
+            throw new NotImplementedException();
+            //connection.Disconnect();
         }
 
-        private static NetworkMessageDelegate MessageHandler<T>(Action<INetworkConnection, T> handler)
+        private static NetworkMessageDelegate MessageHandler<T>(Action<INetworkPlayer, T> handler)
         {
-            void AdapterFunction(INetworkConnection conn, NetworkReader reader, int channelId)
+            void AdapterFunction(INetworkPlayer conn, NetworkReader reader, int channelId)
             {
                 // protect against DOS attacks if attackers try to send invalid
                 // data packets to crash the server/client. there are a thousand
@@ -280,7 +126,7 @@ namespace Mirage
         /// <typeparam name="T">Message type</typeparam>
         /// <param name="handler">Function handler which will be invoked for when this message type is received.</param>
         /// <param name="requireAuthentication">True if the message requires an authenticated connection</param>
-        public void RegisterHandler<T>(Action<INetworkConnection, T> handler)
+        public void RegisterHandler<T>(Action<INetworkPlayer, T> handler)
         {
             int msgType = MessagePacker.GetId<T>();
             if (logger.filterLogType == LogType.Log && messageHandlers.ContainsKey(msgType))
@@ -320,25 +166,6 @@ namespace Mirage
             messageHandlers.Clear();
         }
 
-        public static void Send<T>(IEnumerable<INetworkConnection> connections, T msg, int channelId = Channel.Reliable)
-        {
-            using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
-            {
-                // pack message into byte[] once
-                MessagePacker.Pack(msg, writer);
-                var segment = writer.ToArraySegment();
-                int count = 0;
-
-                foreach (INetworkConnection conn in connections)
-                {
-                    // send to all connections, but don't wait for them
-                    conn.Send(segment, channelId);
-                    count++;
-                }
-
-                NetworkDiagnostics.OnSend(msg, channelId, segment.Count, count);
-            }
-        }
 
         /// <summary>
         /// This sends a network message to the connection.
@@ -362,7 +189,8 @@ namespace Mirage
         // the client. they would be detected as a message. send messages instead.
         public void Send(ArraySegment<byte> segment, int channelId = Channel.Reliable)
         {
-            connection.Send(segment, channelId);
+            throw new NotImplementedException();
+            //connection.Send(segment, channelId);
         }
 
         public void AddToVisList(NetworkIdentity identity)
@@ -423,17 +251,8 @@ namespace Mirage
                 {
                     int msgType = MessagePacker.UnpackId(networkReader);
 
-                    if (msgType == MessagePacker.GetId<NotifyPacket>())
-                    {
-                        // this is a notify message, send to the notify receive
-                        NotifyPacket notifyPacket = networkReader.ReadNotifyPacket();
-                        NofifyStuff.ReceiveNotify(notifyPacket, networkReader, channelId);
-                    }
-                    else
-                    {
-                        // try to invoke the handler for that message
-                        InvokeHandler(msgType, networkReader, channelId);
-                    }
+                    // try to invoke the handler for that message
+                    InvokeHandler(msgType, networkReader, channelId);
                 }
                 catch (InvalidDataException ex)
                 {
@@ -477,42 +296,5 @@ namespace Mirage
             // clear the hashset because we destroyed them all
             clientOwnedObjects.Clear();
         }
-
-        public async UniTask ProcessMessagesAsync()
-        {
-            var buffer = new MemoryStream();
-
-            try
-            {
-                while (true)
-                {
-
-                    int channel = await connection.ReceiveAsync(buffer);
-
-                    buffer.TryGetBuffer(out ArraySegment<byte> data);
-                    TransportReceive(data, channel);
-                }
-            }
-            catch (EndOfStreamException)
-            {
-                // connection closed,  normal
-            }
-        }
-
-
-        #region Notifiy
-        event Action<INetworkConnection, object> INotifyReceiver.NotifyDelivered
-        {
-            add => NofifyStuff.NotifyDelivered += value;
-            remove => NofifyStuff.NotifyDelivered -= value;
-        }
-
-        event Action<INetworkConnection, object> INotifyReceiver.NotifyLost
-        {
-            add => NofifyStuff.NotifyLost += value;
-            remove => NofifyStuff.NotifyLost -= value;
-        }
-        void INotifySender.SendNotify<T>(T message, object token, int channelId = 1) => NofifyStuff.SendNotify(message, token, channelId);
-        #endregion
     }
 }

@@ -10,7 +10,7 @@ namespace Mirage.Examples.Pong
 
         GameObject ball;
 
-        public override void OnServerAddPlayer(INetworkConnection conn)
+        public override void OnServerAddPlayer(INetworkPlayer conn)
         {
             // add player at correct spawn position
             Transform start = Server.NumberOfPlayers == 0 ? leftRacketSpawn : rightRacketSpawn;
@@ -26,7 +26,7 @@ namespace Mirage.Examples.Pong
         }
 
 
-        public void OnServerDisconnect(INetworkConnection conn)
+        public void OnServerDisconnect(INetworkPlayer conn)
         {
             // destroy ball
             if (ball != null)

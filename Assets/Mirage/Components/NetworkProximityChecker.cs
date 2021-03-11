@@ -58,7 +58,7 @@ namespace Mirage
 
         /// <param name="conn">Network connection of a player.</param>
         /// <returns>True if the player can see this object.</returns>
-        public override bool OnCheckObserver(INetworkConnection conn)
+        public override bool OnCheckObserver(INetworkPlayer conn)
         {
             if (ForceHidden)
                 return false;
@@ -72,7 +72,7 @@ namespace Mirage
         /// </summary>
         /// <param name="observers">The new set of observers for this object.</param>
         /// <param name="initialize">True if the set of observers is being built for the first time.</param>
-        public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize)
+        public override void OnRebuildObservers(HashSet<INetworkPlayer> observers, bool initialize)
         {
             // if force hidden then return without adding any observers.
             if (ForceHidden)
@@ -88,7 +88,7 @@ namespace Mirage
             //    magnitude faster. if we have 10k monsters and run a sphere
             //    cast 10k times, we will see a noticeable lag even with physics
             //    layers. but checking to every connection is fast.
-            foreach (INetworkConnection conn in Server.connections)
+            foreach (INetworkPlayer conn in Server.connections)
             {
                 // check distance
                 if (conn != null && conn.Identity != null && Vector3.Distance(conn.Identity.transform.position, position) < VisibilityRange)

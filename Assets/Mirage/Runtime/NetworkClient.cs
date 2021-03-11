@@ -12,7 +12,7 @@ namespace Mirage
     /// Event fires from a <see cref="NetworkClient">NetworkClient</see> or <see cref="NetworkServer">NetworkServer</see> during a new connection, a new authentication, or a disconnection.
     /// <para>INetworkConnection - connection creating the event</para>
     /// </summary>
-    [Serializable] public class NetworkConnectionEvent : UnityEvent<INetworkConnection> { }
+    [Serializable] public class NetworkConnectionEvent : UnityEvent<INetworkPlayer> { }
 
     public enum ConnectState
     {
@@ -62,7 +62,7 @@ namespace Mirage
         /// <summary>
         /// The NetworkConnection object this client is using.
         /// </summary>
-        public INetworkConnection Connection { get; internal set; }
+        public INetworkPlayer Connection { get; internal set; }
 
         internal ConnectState connectState = ConnectState.Disconnected;
 
@@ -184,7 +184,7 @@ namespace Mirage
         /// <summary>
         /// Creates a new INetworkConnection based on the provided IConnection.
         /// </summary>
-        public virtual INetworkConnection GetNewConnection(IConnection connection)
+        public virtual INetworkPlayer GetNewConnection(IConnection connection)
         {
             return new NetworkConnection(connection);
         }
@@ -230,7 +230,7 @@ namespace Mirage
             }
         }
 
-        internal void OnAuthenticated(INetworkConnection conn)
+        internal void OnAuthenticated(INetworkPlayer conn)
         {
             Authenticated?.Invoke(conn);
         }

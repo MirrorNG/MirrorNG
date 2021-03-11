@@ -12,8 +12,8 @@ namespace Mirage.Tests
         #region test components
         class RebuildEmptyObserversNetworkBehaviour : NetworkVisibility
         {
-            public override bool OnCheckObserver(INetworkConnection conn) { return true; }
-            public override void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize) { }
+            public override bool OnCheckObserver(INetworkPlayer conn) { return true; }
+            public override void OnRebuildObservers(HashSet<INetworkPlayer> observers, bool initialize) { }
             public override void OnSetHostVisibility(bool visible)
             {
             }

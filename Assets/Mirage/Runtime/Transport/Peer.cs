@@ -72,8 +72,8 @@ namespace Mirage.SocketLayer
             throw new NotImplementedException();
         }
 
-        public void SendNotify() => throw new NotImplementedException();
-        public void SendUnreliable() => throw new NotImplementedException();
+        public void SendNotify(Connection connection) => throw new NotImplementedException();
+        public void SendUnreliable(Connection connection) => throw new NotImplementedException();
 
         private void Send(Connection connection, Packet packet) => Send(connection, packet.data, packet.length);
         private void Send(Connection connection, byte[] data, int? length = null)
@@ -232,11 +232,6 @@ namespace Mirage.SocketLayer
 
         private bool Validate(EndPoint endPoint, Packet packet)
         {
-            // todo do security stuff here:
-            // - connect request
-            // - simple key/phrase send from client with first message
-            // - hashcash??
-
             if (packet.type != PacketType.Command)
                 return false;
 
@@ -246,6 +241,7 @@ namespace Mirage.SocketLayer
             if (!connectKeyValidator.Validate(packet))
                 return false;
 
+            // todo implement hashcash
             //if (!hashCashValidator.Validate(packet))
             //    return false;
 

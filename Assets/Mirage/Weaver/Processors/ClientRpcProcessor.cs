@@ -54,7 +54,7 @@ namespace Mirage.Weaver
                 MethodAttributes.Family | MethodAttributes.HideBySig);
 
             _ = rpc.AddParam<NetworkReader>("reader");
-            _ = rpc.AddParam<INetworkConnection>("senderConnection");
+            _ = rpc.AddParam<INetworkPlayer>("senderConnection");
             _ = rpc.AddParam<int>("replyId");
 
             ILProcessor worker = rpc.Body.GetILProcessor();

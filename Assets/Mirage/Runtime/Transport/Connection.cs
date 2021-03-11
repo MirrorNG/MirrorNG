@@ -92,15 +92,17 @@ namespace Mirage.SocketLayer
                     break;
             }
         }
-        public void SetReceiveTime()
+        internal void SetReceiveTime()
         {
             timeoutTracker.SetReceiveTime();
         }
-        public void SetSendTime()
+        internal void SetSendTime()
         {
             keepAliveTracker.SetSendTime();
         }
 
+        public void SendUnreiable(ArraySegment<byte> segment) => peer.SendUnreliable(this);
+        public void SendNotifiy() => peer.SendNotify(this);
 
         /// <summary>
         /// client connecting attempts

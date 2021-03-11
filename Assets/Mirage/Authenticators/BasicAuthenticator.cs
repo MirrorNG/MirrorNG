@@ -26,13 +26,13 @@ namespace Mirage.Authenticators
             public string Message;
         }
 
-        public override void OnServerAuthenticate(INetworkConnection conn)
+        public override void OnServerAuthenticate(INetworkPlayer conn)
         {
             // wait for AuthRequestMessage from client
             conn.RegisterHandler<AuthRequestMessage>(OnAuthRequestMessage);
         }
 
-        public override void OnClientAuthenticate(INetworkConnection conn)
+        public override void OnClientAuthenticate(INetworkPlayer conn)
         {
             conn.RegisterHandler<AuthResponseMessage>(OnAuthResponseMessage);
 
@@ -45,7 +45,7 @@ namespace Mirage.Authenticators
             conn.Send(authRequestMessage);
         }
 
-        public void OnAuthRequestMessage(INetworkConnection conn, AuthRequestMessage msg)
+        public void OnAuthRequestMessage(INetworkPlayer conn, AuthRequestMessage msg)
         {
             if (logger.LogEnabled()) logger.LogFormat(LogType.Log, "Authentication Request: {0} {1}", msg.AuthUsername, msg.AuthPassword);
 
@@ -80,13 +80,13 @@ namespace Mirage.Authenticators
             }
         }
 
-        public IEnumerator DelayedDisconnect(INetworkConnection conn, float waitTime)
+        public IEnumerator DelayedDisconnect(INetworkPlayer conn, float waitTime)
         {
             yield return new WaitForSeconds(waitTime);
             conn.Disconnect();
         }
 
-        public void OnAuthResponseMessage(INetworkConnection conn, AuthResponseMessage msg)
+        public void OnAuthResponseMessage(INetworkPlayer conn, AuthResponseMessage msg)
         {
             if (msg.Code == 100)
             {

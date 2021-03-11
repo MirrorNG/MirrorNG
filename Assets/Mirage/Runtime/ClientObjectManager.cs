@@ -94,7 +94,7 @@ namespace Mirage
             }
         }
 
-        void OnClientConnected(INetworkConnection conn)
+        void OnClientConnected(INetworkPlayer conn)
         {
             RegisterSpawnPrefabs();
 
@@ -593,7 +593,7 @@ namespace Mirage
             }
         }
 
-        private void OnServerRpcReply(INetworkConnection connection, ServerRpcReply reply)
+        private void OnServerRpcReply(INetworkPlayer connection, ServerRpcReply reply)
         {
             // find the callback that was waiting for this and invoke it.
             if (callbacks.TryGetValue(reply.replyId, out Action<NetworkReader> action))

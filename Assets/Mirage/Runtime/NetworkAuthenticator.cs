@@ -12,17 +12,17 @@ namespace Mirage
         /// <summary>
         /// Notify subscribers on the server when a client is authenticated
         /// </summary>
-        public event Action<INetworkConnection> OnServerAuthenticated;
+        public event Action<INetworkPlayer> OnServerAuthenticated;
 
         /// <summary>
         /// Notify subscribers on the client when the client is authenticated
         /// </summary>
-        public event Action<INetworkConnection> OnClientAuthenticated;
+        public event Action<INetworkPlayer> OnClientAuthenticated;
 
         #region server
 
         // This will get more code in the near future
-        internal void OnServerAuthenticateInternal(INetworkConnection conn)
+        internal void OnServerAuthenticateInternal(INetworkPlayer conn)
         {
             OnServerAuthenticate(conn);
         }
@@ -31,7 +31,7 @@ namespace Mirage
         /// Called on server from OnServerAuthenticateInternal when a client needs to authenticate
         /// </summary>
         /// <param name="conn">Connection to client.</param>
-        public virtual void OnServerAuthenticate(INetworkConnection conn)
+        public virtual void OnServerAuthenticate(INetworkPlayer conn)
         {
             OnServerAuthenticated?.Invoke(conn);
         }
@@ -41,7 +41,7 @@ namespace Mirage
         #region client
 
         // This will get more code in the near future
-        internal void OnClientAuthenticateInternal(INetworkConnection conn)
+        internal void OnClientAuthenticateInternal(INetworkPlayer conn)
         {
             OnClientAuthenticate(conn);
         }
@@ -50,7 +50,7 @@ namespace Mirage
         /// Called on client from OnClientAuthenticateInternal when a client needs to authenticate
         /// </summary>
         /// <param name="conn">Connection of the client.</param>
-        public virtual void OnClientAuthenticate(INetworkConnection conn)
+        public virtual void OnClientAuthenticate(INetworkPlayer conn)
         {
             OnClientAuthenticated?.Invoke(conn);
         }

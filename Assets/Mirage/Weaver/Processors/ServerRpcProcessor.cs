@@ -150,7 +150,7 @@ namespace Mirage.Weaver
                 userCodeFunc.ReturnType);
 
             _ = cmd.AddParam<NetworkReader>("reader");
-            _ = cmd.AddParam<INetworkConnection>("senderConnection");
+            _ = cmd.AddParam<INetworkPlayer>("senderConnection");
             _ = cmd.AddParam<int>("replyId");
 
 

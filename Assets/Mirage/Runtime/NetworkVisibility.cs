@@ -18,7 +18,7 @@ namespace Mirage
         /// </summary>
         /// <param name="conn">Network connection of a player.</param>
         /// <returns>True if the player can see this object.</returns>
-        public abstract bool OnCheckObserver(INetworkConnection conn);
+        public abstract bool OnCheckObserver(INetworkPlayer conn);
 
         /// <summary>
         /// Callback used by the visibility system to (re)construct the set of observers that can see this object.
@@ -26,7 +26,7 @@ namespace Mirage
         /// </summary>
         /// <param name="observers">The new set of observers for this object.</param>
         /// <param name="initialize">True if the set of observers is being built for the first time.</param>
-        public abstract void OnRebuildObservers(HashSet<INetworkConnection> observers, bool initialize);
+        public abstract void OnRebuildObservers(HashSet<INetworkPlayer> observers, bool initialize);
 
         /// <summary>
         /// Callback used by the visibility system for objects on a host.
