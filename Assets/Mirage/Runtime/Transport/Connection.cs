@@ -31,9 +31,14 @@ namespace Mirage.SocketLayer
 
         private readonly Peer peer;
         public readonly EndPoint EndPoint;
+
         private readonly Config config;
         private readonly Time time;
+
         private ConnectingTracker connectingTracker;
+        private TimeoutTracker timeoutTracker;
+        private KeepAliveTracker keepAliveTracker;
+        private DisconnectedTracker disconnectedTracker;
 
         public Connection(Peer peer, EndPoint endPoint, Config config, Time time)
         {
@@ -42,7 +47,11 @@ namespace Mirage.SocketLayer
             this.config = config;
             this.time = time;
             State = ConnectionState.Created;
+
             connectingTracker = new ConnectingTracker(config, time);
+            timeoutTracker = new TimeoutTracker(config, time);
+            keepAliveTracker = new KeepAliveTracker(config, time);
+            disconnectedTracker = new DisconnectedTracker();
         }
 
         public float LastRecvPacketTime { get; internal set; }
@@ -141,8 +150,6 @@ namespace Mirage.SocketLayer
         }
 
 
-        TimeoutTracker timeoutTracker;
-        KeepAliveTracker keepAliveTracker;
         class ConnectingTracker
         {
             private readonly Config config;

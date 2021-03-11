@@ -28,6 +28,7 @@ namespace Mirage.SocketLayer
         readonly byte[] commandBuffer = new byte[3];
 
         public event Action<Connection> OnConnected;
+        public event Action<Connection, RejectReason> OnConnectionFailed;
 
         public Peer(ISocket socket, Config config)
         {
@@ -116,6 +117,7 @@ namespace Mirage.SocketLayer
                 {
                     HandleNewConnection(endPoint, packet);
                 }
+
             }
         }
 
@@ -149,9 +151,32 @@ namespace Mirage.SocketLayer
             connection.SetReceiveTime();
         }
 
-        private void HandleCommand(Connection connection, Packet packet)
+        private IMessageReceiver getReceiver(Connection connection)
         {
             throw new NotImplementedException();
+        }
+
+
+        private void HandleCommand(Connection connection, Packet packet)
+        {
+            switch (packet.command)
+            {
+                case Commands.ConnectRequest:
+                    HandleConnectionRequest(connection);
+                    break;
+                case Commands.ConnectionAccepted:
+                    HandleConnectionAccepted(connection);
+                    break;
+                case Commands.ConnectionRejected:
+                    HandleConnectionRejected(connection, packet);
+                    break;
+                case Commands.Disconnect:
+                    HandleConnectionDisconnect(connection);
+                    break;
+                default:
+                    // handle message invalid command type
+                    throw new NotImplementedException();
+            }
         }
 
         private void HandleNewConnection(EndPoint endPoint, Packet packet)
@@ -190,11 +215,15 @@ namespace Mirage.SocketLayer
             connection.LastRecvPacketTime = time.Now;
             connections.Add(endPoint, connection);
 
+            HandleConnectionRequest(connection);
+        }
+
+        private void HandleConnectionRequest(Connection connection)
+        {
             switch (connection.State)
             {
                 case ConnectionState.Created:
-                    connection.ChangeState(ConnectionState.Connected);
-                    OnConnected?.Invoke(connection);
+                    SetConnectionAsConnected(connection);
                     SendCommand(connection, Commands.ConnectionAccepted);
                     break;
 
@@ -209,15 +238,63 @@ namespace Mirage.SocketLayer
             }
         }
 
+        private void SetConnectionAsConnected(Connection connection)
+        {
+            connection.ChangeState(ConnectionState.Connected);
+            OnConnected?.Invoke(connection);
+        }
+
         private void RejectConnectionWithReason(EndPoint endPoint, RejectReason reason)
         {
             SendCommandUnconnected(endPoint, Commands.ConnectionAccepted, (byte)reason);
         }
 
-        private IMessageReceiver getReceiver(Connection connection)
+
+        void HandleConnectionAccepted(Connection connection)
+        {
+            switch (connection.State)
+            {
+                case ConnectionState.Created:
+                    // todo use better Exception type
+                    throw new Exception($"Accepted Connections should not be in {nameof(ConnectionState.Created)} state");
+
+                case ConnectionState.Connected:
+                    // ignore this, command may have been re-sent or recieved twice
+                    break;
+
+                case ConnectionState.Connecting:
+                    SetConnectionAsConnected(connection);
+                    break;
+            }
+        }
+        void HandleConnectionRejected(Connection connection, Packet packet)
+        {
+            switch (connection.State)
+            {
+                case ConnectionState.Connecting:
+                    var reason = (RejectReason)packet.data[2];
+                    if (logger.LogEnabled()) logger.Log($"Connection Refused: {reason}");
+                    RemoveConnection(connection);
+                    OnConnectionFailed?.Invoke(connection, reason);
+                    break;
+
+                default:
+                    // todo use better Exception type
+                    throw new Exception($"Rejected Connections should not be in {nameof(ConnectionState.Created)} state");
+            }
+        }
+
+        private void RemoveConnection(Connection connection)
         {
             throw new NotImplementedException();
         }
+
+        void HandleConnectionDisconnect(Connection connection)
+        {
+            throw new NotImplementedException();
+        }
+
+
 
         void UpdateConnections()
         {
@@ -226,10 +303,16 @@ namespace Mirage.SocketLayer
                 kvp.Value.Update();
             }
         }
+
     }
     internal struct Packet
     {
-        const int MinSize = 1;
+        const int MinPacketSize = 1;
+        const int MinCommandSize = 2;
+        /// <summary>
+        /// Min size of message given to Mirage
+        /// </summary>
+        const int MinMessageSize = 3;
 
         public byte[] data;
         public int length;
@@ -242,10 +325,26 @@ namespace Mirage.SocketLayer
 
         public bool IsValidSize()
         {
-            return length >= MinSize;
+            if (length < MinPacketSize)
+                return false;
+
+            switch (type)
+            {
+                case PacketType.Command:
+                    return length >= MinCommandSize;
+
+                case PacketType.Unreliable:
+                case PacketType.Notify:
+                    return length >= MinMessageSize;
+
+                default:
+                case PacketType.KeepAlive:
+                    return true;
+            }
         }
 
         public PacketType type => (PacketType)data[0];
+        public Commands command => (Commands)data[1];
 
         public ArraySegment<byte> ToSegment()
         {
@@ -302,7 +401,7 @@ namespace Mirage.SocketLayer
     /// <summary>
     /// Reson for reject sent from server
     /// </summary>
-    internal enum RejectReason
+    public enum RejectReason
     {
         None = 0,
         ServerFull = 1,
