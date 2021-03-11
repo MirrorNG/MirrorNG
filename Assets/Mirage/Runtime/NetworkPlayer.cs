@@ -1,17 +1,160 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using Cysharp.Threading.Tasks;
 using Mirage.SocketLayer;
 using UnityEngine;
 using UnityEngine.Assertions;
+using Time = UnityEngine.Time;
 
 namespace Mirage
 {
     [NetworkMessage]
     public struct NotifyAck
     {
+    }
+
+
+    public class NofifyStuff : INotifySender, INotifyReceiver
+    {
+        public NetworkPlayer Player { get; }
+
+        public NofifyStuff(NetworkPlayer player)
+        {
+            lastNotifySentTime = Time.unscaledTime;
+            Player = player;
+        }
+
+
+        internal struct PacketEnvelope
+        {
+            internal ushort Sequence;
+            internal object Token;
+        }
+        const int ACK_MASK_BITS = sizeof(ulong) * 8;
+        const int WINDOW_SIZE = 512;
+        // packages will be acked no longer than this time;
+        public float NOTIFY_ACK_TIMEOUT = 0.3f;
+
+        private Sequencer sequencer = new Sequencer(16);
+        readonly Queue<PacketEnvelope> sendWindow = new Queue<PacketEnvelope>(WINDOW_SIZE);
+        private float lastNotifySentTime;
+
+        private ushort receiveSequence;
+        private ulong receiveMask;
+
+
+
+
+        /// <summary>
+        /// Sends a message, but notify when it is delivered or lost
+        /// </summary>
+        /// <typeparam name="T">type of message to send</typeparam>
+        /// <param name="message">message to send</param>
+        /// <param name="token">a arbitrary object that the sender will receive with their notification</param>
+        public void SendNotify<T>(T message, object token, int channelId = Channel.Unreliable)
+        {
+            if (sendWindow.Count == WINDOW_SIZE)
+            {
+                NotifyLost?.Invoke(Player, token);
+                return;
+            }
+
+            using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
+            {
+                var notifyPacket = new NotifyPacket
+                {
+                    Sequence = (ushort)sequencer.Next(),
+                    ReceiveSequence = receiveSequence,
+                    AckMask = receiveMask
+                };
+
+                sendWindow.Enqueue(new PacketEnvelope
+                {
+                    Sequence = notifyPacket.Sequence,
+                    Token = token
+                });
+
+                MessagePacker.Pack(notifyPacket, writer);
+                MessagePacker.Pack(message, writer);
+                NetworkDiagnostics.OnSend(message, channelId, writer.Length, 1);
+                Player.Send(writer.ToArraySegment(), channelId);
+                lastNotifySentTime = Time.unscaledTime;
+            }
+
+        }
+
+        internal void ReceiveNotify(NotifyPacket notifyPacket, NetworkReader networkReader, int channelId)
+        {
+            int sequenceDistance = (int)sequencer.Distance(notifyPacket.Sequence, receiveSequence);
+
+            // sequence is so far out of bounds we can't save, just kick him (or her!)
+            if (Math.Abs(sequenceDistance) > WINDOW_SIZE)
+            {
+                Player.Disconnect();
+                return;
+            }
+
+            // this message is old,  we already received
+            // a newer or duplicate packet.  Discard it
+            if (sequenceDistance <= 0)
+                return;
+
+            receiveSequence = notifyPacket.Sequence;
+
+            if (sequenceDistance >= ACK_MASK_BITS)
+                receiveMask = 1;
+            else
+                receiveMask = (receiveMask << sequenceDistance) | 1;
+
+            AckPackets(notifyPacket.ReceiveSequence, notifyPacket.AckMask);
+
+            int msgType = MessagePacker.UnpackId(networkReader);
+            Player.InvokeHandler(msgType, networkReader, channelId);
+
+            if (Time.unscaledTime - lastNotifySentTime > NOTIFY_ACK_TIMEOUT)
+            {
+                SendNotify(new NotifyAck(), null, channelId);
+            }
+        }
+
+        // the other end just sent us a message
+        // and it told us the latest message it got
+        // and the ack mask
+        private void AckPackets(ushort receiveSequence, ulong ackMask)
+        {
+            while (sendWindow.Count > 0)
+            {
+                PacketEnvelope envelope = sendWindow.Peek();
+
+                int distance = (int)sequencer.Distance(envelope.Sequence, receiveSequence);
+
+                if (distance > 0)
+                    break;
+
+                sendWindow.Dequeue();
+
+                // if any of these cases trigger, packet is most likely lost
+                if ((distance <= -ACK_MASK_BITS) || ((ackMask & (1UL << -distance)) == 0UL))
+                {
+                    NotifyLost?.Invoke(Player, envelope.Token);
+                }
+                else
+                {
+                    NotifyDelivered?.Invoke(Player, envelope.Token);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Raised when a message is delivered
+        /// </summary>
+        public event Action<INetworkConnection, object> NotifyDelivered;
+
+        /// <summary>
+        /// Raised when a message is lost
+        /// </summary>
+        public event Action<INetworkConnection, object> NotifyLost;
     }
 
     /// <summary>
@@ -60,11 +203,8 @@ namespace Mirage
         /// </summary>
         public bool IsReady { get; set; }
 
-        /// <summary>
-        /// The IP address / URL / FQDN associated with the connection.
-        /// Can be useful for a game master to do IP Bans etc.
-        /// </summary>
-        public virtual EndPoint Address => connection.GetEndPointAddress();
+        public NofifyStuff NofifyStuff { get; }
+
 
         /// <summary>
         /// The NetworkIdentity for this connection.
@@ -89,9 +229,9 @@ namespace Mirage
             Assert.IsNotNull(connection);
             this.connection = connection;
 
-            lastNotifySentTime = Time.unscaledTime;
             // a black message to ensure a notify timeout
             RegisterHandler<NotifyAck>(msg => { });
+            NofifyStuff = new NofifyStuff(this);
         }
 
         /// <summary>
@@ -225,12 +365,6 @@ namespace Mirage
             connection.Send(segment, channelId);
         }
 
-
-        public override string ToString()
-        {
-            return $"connection({Address})";
-        }
-
         public void AddToVisList(NetworkIdentity identity)
         {
             visList.Add(identity);
@@ -293,7 +427,7 @@ namespace Mirage
                     {
                         // this is a notify message, send to the notify receive
                         NotifyPacket notifyPacket = networkReader.ReadNotifyPacket();
-                        ReceiveNotify(notifyPacket, networkReader, channelId);
+                        NofifyStuff.ReceiveNotify(notifyPacket, networkReader, channelId);
                     }
                     else
                     {
@@ -365,136 +499,20 @@ namespace Mirage
             }
         }
 
-        #region Notify
 
-        internal struct PacketEnvelope
+        #region Notifiy
+        event Action<INetworkConnection, object> INotifyReceiver.NotifyDelivered
         {
-            internal ushort Sequence;
-            internal object Token;
-        }
-        const int ACK_MASK_BITS = sizeof(ulong) * 8;
-        const int WINDOW_SIZE = 512;
-        // packages will be acked no longer than this time;
-        public float NOTIFY_ACK_TIMEOUT = 0.3f;
-
-        private Sequencer sequencer = new Sequencer(16);
-        readonly Queue<PacketEnvelope> sendWindow = new Queue<PacketEnvelope>(WINDOW_SIZE);
-        private float lastNotifySentTime;
-
-        private ushort receiveSequence;
-        private ulong receiveMask;
-
-
-
-        /// <summary>
-        /// Sends a message, but notify when it is delivered or lost
-        /// </summary>
-        /// <typeparam name="T">type of message to send</typeparam>
-        /// <param name="message">message to send</param>
-        /// <param name="token">a arbitrary object that the sender will receive with their notification</param>
-        public void SendNotify<T>(T message, object token, int channelId = Channel.Unreliable)
-        {
-            if (sendWindow.Count == WINDOW_SIZE)
-            {
-                NotifyLost?.Invoke(this, token);
-                return;
-            }
-
-            using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
-            {
-                var notifyPacket = new NotifyPacket
-                {
-                    Sequence = (ushort)sequencer.Next(),
-                    ReceiveSequence = receiveSequence,
-                    AckMask = receiveMask
-                };
-
-                sendWindow.Enqueue(new PacketEnvelope
-                {
-                    Sequence = notifyPacket.Sequence,
-                    Token = token
-                });
-
-                MessagePacker.Pack(notifyPacket, writer);
-                MessagePacker.Pack(message, writer);
-                NetworkDiagnostics.OnSend(message, channelId, writer.Length, 1);
-                Send(writer.ToArraySegment(), channelId);
-                lastNotifySentTime = Time.unscaledTime;
-            }
-
+            add => NofifyStuff.NotifyDelivered += value;
+            remove => NofifyStuff.NotifyDelivered -= value;
         }
 
-        internal void ReceiveNotify(NotifyPacket notifyPacket, NetworkReader networkReader, int channelId)
+        event Action<INetworkConnection, object> INotifyReceiver.NotifyLost
         {
-            int sequenceDistance = (int)sequencer.Distance(notifyPacket.Sequence, receiveSequence);
-
-            // sequence is so far out of bounds we can't save, just kick him (or her!)
-            if (Math.Abs(sequenceDistance) > WINDOW_SIZE)
-            {
-                Disconnect();
-                return;
-            }
-
-            // this message is old,  we already received
-            // a newer or duplicate packet.  Discard it
-            if (sequenceDistance <= 0)
-                return;
-
-            receiveSequence = notifyPacket.Sequence;
-
-            if (sequenceDistance >= ACK_MASK_BITS)
-                receiveMask = 1;
-            else
-                receiveMask = (receiveMask << sequenceDistance) | 1;
-
-            AckPackets(notifyPacket.ReceiveSequence, notifyPacket.AckMask);
-
-            int msgType = MessagePacker.UnpackId(networkReader);
-            InvokeHandler(msgType, networkReader, channelId);
-
-            if (Time.unscaledTime - lastNotifySentTime > NOTIFY_ACK_TIMEOUT)
-            {
-                SendNotify(new NotifyAck(), null, channelId);
-            }
+            add => NofifyStuff.NotifyLost += value;
+            remove => NofifyStuff.NotifyLost -= value;
         }
-
-        // the other end just sent us a message
-        // and it told us the latest message it got
-        // and the ack mask
-        private void AckPackets(ushort receiveSequence, ulong ackMask)
-        {
-            while (sendWindow.Count > 0)
-            {
-                PacketEnvelope envelope = sendWindow.Peek();
-
-                int distance = (int)sequencer.Distance(envelope.Sequence, receiveSequence);
-
-                if (distance > 0)
-                    break;
-
-                sendWindow.Dequeue();
-
-                // if any of these cases trigger, packet is most likely lost
-                if ((distance <= -ACK_MASK_BITS) || ((ackMask & (1UL << -distance)) == 0UL))
-                {
-                    NotifyLost?.Invoke(this, envelope.Token);
-                }
-                else
-                {
-                    NotifyDelivered?.Invoke(this, envelope.Token);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Raised when a message is delivered
-        /// </summary>
-        public event Action<INetworkConnection, object> NotifyDelivered;
-
-        /// <summary>
-        /// Raised when a message is lost
-        /// </summary>
-        public event Action<INetworkConnection, object> NotifyLost;
+        void INotifySender.SendNotify<T>(T message, object token, int channelId = 1) => NofifyStuff.SendNotify(message, token, channelId);
         #endregion
     }
 }

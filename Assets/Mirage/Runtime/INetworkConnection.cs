@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using Cysharp.Threading.Tasks;
 
 namespace Mirage
@@ -104,7 +103,6 @@ namespace Mirage
     public interface INetworkConnection : IMessageHandler, IVisibilityTracker, IObjectOwner
     {
         bool IsReady { get; set; }
-        EndPoint Address { get; }
         object AuthenticationData { get; set; }
 
         void Disconnect();
