@@ -258,7 +258,7 @@ namespace Mirage
                 throw new UnauthorizedAccessException($"Trying to send ServerRpc for object without authority. {invokeClass}.{cmdName}");
             }
 
-            if (Client.Connection == null)
+            if (Client.Player == null)
             {
                 throw new InvalidOperationException("Send ServerRpc attempted with no client running [client=" + ConnectionToServer + "].");
             }

@@ -56,13 +56,15 @@ namespace Mirage.SocketLayer
 
 
         public void Bind(EndPoint endPoint) => socket.Bind(endPoint);
-        public void Connect(EndPoint endPoint)
+        public Connection Connect(EndPoint endPoint)
         {
             Connection connection = CreateNewConnection(endPoint);
             connection.ChangeState(ConnectionState.Connecting);
 
             // update now to send connectRequest command
             connection.Update();
+
+            return connection;
         }
 
         public void Close()

@@ -161,7 +161,7 @@ namespace Mirage.Tests.Host
 
             serverObjectManager.ReplacePlayerForConnection(server.LocalConnection, client, playerReplacement, true);
 
-            Assert.That(server.LocalClient.Connection.Identity, Is.EqualTo(replacementIdentity));
+            Assert.That(server.LocalClient.Player.Identity, Is.EqualTo(replacementIdentity));
         }
 
         [UnityTest]

@@ -9,6 +9,37 @@ using UnityEngine.Serialization;
 
 namespace Mirage
 {
+    public static class PeerUtil
+    {
+        public static (Peer, TransportV2) Create(GameObject holder)
+        {
+            TransportV2 socketCreator;
+            socketCreator = holder.GetComponent<TransportV2>();
+
+            PeerUpdater peerUpdater = holder.GetComponent<PeerUpdater>();
+
+            if (socketCreator == null)
+                throw new InvalidOperationException("Transport could not be found");
+
+            if (peerUpdater == null)
+                throw new InvalidOperationException("PeerUpdater could not be found");
+
+            ISocket socket = socketCreator.CreateServerSocket();
+            var peer = new Peer(socket, new Config
+            {
+                // todo expose these setting
+                MaxConnections = 4,
+                MaxConnectAttempts = 10,
+                ConnectAttemptInterval = 2,
+                DisconnectTimeout = 30,
+                KeepAliveInterval = 10,
+            });
+
+            peerUpdater.peer = peer;
+            return (peer, socketCreator);
+        }
+    }
+
     /// <summary>
     /// The NetworkServer.
     /// </summary>
@@ -169,21 +200,7 @@ namespace Mirage
             //Make sure connections are cleared in case any old connections references exist from previous sessions
             connections.Clear();
 
-            if (socketCreator is null)
-                socketCreator = GetComponent<TransportV2>();
-            if (socketCreator == null)
-                throw new InvalidOperationException("Transport could not be found for NetworkServer");
-
-            ISocket socket = socketCreator.CreateServerSocket();
-            peer = new Peer(socket, new Config
-            {
-                MaxConnections = MaxConnections,
-                // todo expose these setting
-                MaxConnectAttempts = 10,
-                ConnectAttemptInterval = 2,
-                DisconnectTimeout = 30,
-                KeepAliveInterval = 10,
-            });
+            (peer, socketCreator) = PeerUtil.Create(gameObject);
 
             if (authenticator != null)
             {

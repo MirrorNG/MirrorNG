@@ -39,7 +39,7 @@ namespace Mirage.Examples.Chat
                 return;
 
             // get our player
-            Player player = Client.Connection.Identity.GetComponent<Player>();
+            Player player = Client.Player.Identity.GetComponent<Player>();
 
             // send a message
             player.CmdSend(ChatMessage.text.Trim());

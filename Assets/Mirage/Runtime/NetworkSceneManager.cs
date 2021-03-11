@@ -166,7 +166,7 @@ namespace Mirage
         {
             logger.Log("NetworkSceneManager.OnClientNotReadyMessageInternal");
 
-            Client.Connection.IsReady = false;
+            Client.Player.IsReady = false;
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace Mirage
             }
 
             //set ready after scene change has completed
-            if (!Client.Connection.IsReady)
+            if (!Client.Player.IsReady)
                 SetClientReady();
         }
 
@@ -215,10 +215,10 @@ namespace Mirage
 
             // Set these before sending the ReadyMessage, otherwise host client
             // will fail in InternalAddPlayer with null readyConnection.
-            Client.Connection.IsReady = true;
+            Client.Player.IsReady = true;
 
             // Tell server we're ready to have a player object spawned
-            Client.Connection.Send(new ReadyMessage());
+            Client.Player.Send(new ReadyMessage());
         }
 
         #endregion

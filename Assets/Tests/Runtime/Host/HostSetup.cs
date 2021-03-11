@@ -62,7 +62,7 @@ namespace Mirage.Tests.Host
             serverObjectManager.AddPlayerForConnection(server.LocalConnection, playerGO);
 
             // wait for client to spawn it
-            await AsyncUtil.WaitUntilWithTimeout(() => client.Connection.Identity != null);
+            await AsyncUtil.WaitUntilWithTimeout(() => client.Player.Identity != null);
         });
 
 

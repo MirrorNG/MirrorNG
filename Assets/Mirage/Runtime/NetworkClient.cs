@@ -1,6 +1,6 @@
 using System;
-using System.Linq;
-using Cysharp.Threading.Tasks;
+using System.Net;
+using Mirage.SocketLayer;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -32,7 +32,8 @@ namespace Mirage
     {
         static readonly ILogger logger = LogFactory.GetLogger(typeof(NetworkClient));
 
-        public Transport Transport;
+        TransportV2 socketCreator;
+        Peer peer;
 
         [Tooltip("Authentication component attached to this object")]
         public NetworkAuthenticator authenticator;
@@ -62,7 +63,7 @@ namespace Mirage
         /// <summary>
         /// The NetworkConnection object this client is using.
         /// </summary>
-        public INetworkPlayer Connection { get; internal set; }
+        public NetworkPlayer Player { get; internal set; }
 
         internal ConnectState connectState = ConnectState.Disconnected;
 
@@ -91,70 +92,49 @@ namespace Mirage
         /// </summary>
         public bool IsLocalClient { get; private set; }
 
-        /// <summary>
-        /// Connect client to a NetworkServer instance.
-        /// </summary>
-        /// <param name="serverIp">Address of the server to connect to</param>
-        public UniTask ConnectAsync(string serverIp)
-        {
-            if (logger.LogEnabled()) logger.Log("Client address:" + serverIp);
-
-            var builder = new UriBuilder
-            {
-                Host = serverIp,
-                Scheme = Transport.Scheme.First(),
-            };
-
-            return ConnectAsync(builder.Uri);
-        }
 
         /// <summary>
         /// Connect client to a NetworkServer instance.
         /// </summary>
         /// <param name="serverIp">Address of the server to connect to</param>
         /// <param name="port">The port of the server to connect to</param>
-        public UniTask ConnectAsync(string serverIp, ushort port)
+        public void Connect(string serverIp, ushort port)
         {
             if (logger.LogEnabled()) logger.Log("Client address and port:" + serverIp + ":" + port);
 
-            var builder = new UriBuilder
-            {
-                Host = serverIp,
-                Port = port,
-                Scheme = Transport.Scheme.First()
-            };
-
-            return ConnectAsync(builder.Uri);
+            Connect(new IPEndPoint(IPAddress.Parse(serverIp), port));
         }
 
         /// <summary>
         /// Connect client to a NetworkServer instance.
         /// </summary>
         /// <param name="uri">Address of the server to connect to</param>
-        public async UniTask ConnectAsync(Uri uri)
+        public void Connect(Uri uri)
         {
-            if (logger.LogEnabled()) logger.Log("Client Connect: " + uri);
+            Connect(new IPEndPoint(IPAddress.Parse(uri.Host), uri.Port));
+        }
 
-            if (Transport == null)
-                Transport = GetComponent<Transport>();
-            if (Transport == null)
-                throw new InvalidOperationException("Transport could not be found for NetworkClient");
+        public void Connect(EndPoint endPoint = null)
+        {
+            if (logger.LogEnabled()) logger.Log("Client Connect: " + endPoint);
+
+            (peer, socketCreator) = PeerUtil.Create(gameObject);
 
             connectState = ConnectState.Connecting;
 
             try
             {
-                IConnection transportConnection = await Transport.ConnectAsync(uri);
+                Connection connection = peer.Connect(endPoint ?? socketCreator.GetConnectEndPoint());
 
                 InitializeAuthEvents();
 
                 // setup all the handlers
-                Connection = GetNewConnection(transportConnection);
+                Player = GetNewConnection(connection);
                 Time.Reset();
 
                 RegisterMessageHandlers();
                 Time.UpdateClient(this);
-                OnConnected().Forget();
+                OnConnected();
             }
             catch (Exception)
             {
@@ -165,28 +145,30 @@ namespace Mirage
 
         internal void ConnectHost(NetworkServer server)
         {
-            logger.Log("Client Connect Host to Server");
-            connectState = ConnectState.Connected;
+            //todo fix host mode
+            throw new NotImplementedException();
+            //logger.Log("Client Connect Host to Server");
+            //connectState = ConnectState.Connected;
 
-            InitializeAuthEvents();
+            //InitializeAuthEvents();
 
-            // create local connection objects and connect them
-            (IConnection c1, IConnection c2) = PipeConnection.CreatePipe();
+            //// create local connection objects and connect them
+            //(IConnection c1, IConnection c2) = PipeConnection.CreatePipe();
 
-            server.SetLocalConnection(this, c2);
-            IsLocalClient = true;
-            Connection = GetNewConnection(c1);
-            RegisterHostHandlers();
+            //server.SetLocalConnection(this, c2);
+            //IsLocalClient = true;
+            //Player = GetNewConnection(c1);
+            //RegisterHostHandlers();
 
-            OnConnected().Forget();
+            //OnConnected().Forget();
         }
 
         /// <summary>
         /// Creates a new INetworkConnection based on the provided IConnection.
         /// </summary>
-        public virtual INetworkPlayer GetNewConnection(IConnection connection)
+        public virtual NetworkPlayer GetNewConnection(Connection connection)
         {
-            return new NetworkConnection(connection);
+            return new NetworkPlayer(connection);
         }
 
         void InitializeAuthEvents()
@@ -204,30 +186,31 @@ namespace Mirage
             }
         }
 
-        async UniTaskVoid OnConnected()
+        void OnConnected()
         {
             // reset network time stats
 
             // the handler may want to send messages to the client
             // thus we should set the connected state before calling the handler
             connectState = ConnectState.Connected;
-            Connected?.Invoke(Connection);
+            Connected?.Invoke(Player);
 
-            // start processing messages
-            try
-            {
-                await Connection.ProcessMessagesAsync();
-            }
-            catch (Exception ex)
-            {
-                logger.LogException(ex);
-            }
-            finally
-            {
-                Cleanup();
+            // todo handle cleanup
+            //// start processing messages
+            //try
+            //{
+            //    await Player.ProcessMessagesAsync();
+            //}
+            //catch (Exception ex)
+            //{
+            //    logger.LogException(ex);
+            //}
+            //finally
+            //{
+            //    Cleanup();
 
-                Disconnected?.Invoke();
-            }
+            //    Disconnected?.Invoke();
+            //}
         }
 
         internal void OnAuthenticated(INetworkPlayer conn)
@@ -241,7 +224,7 @@ namespace Mirage
         /// </summary>
         public void Disconnect()
         {
-            Connection?.Disconnect();
+            Player?.Disconnect();
         }
 
         /// <summary>
@@ -255,12 +238,12 @@ namespace Mirage
         /// <returns>True if message was sent.</returns>
         public void Send<T>(T message, int channelId = Channel.Reliable)
         {
-            Connection.Send(message, channelId);
+            Player.Send(message, channelId);
         }
 
         public void Send(ArraySegment<byte> segment, int channelId = Channel.Reliable)
         {
-            Connection.Send(segment, channelId);
+            Player.Send(segment, channelId);
         }
 
         internal void Update()
@@ -275,12 +258,12 @@ namespace Mirage
 
         internal void RegisterHostHandlers()
         {
-            Connection.RegisterHandler<NetworkPongMessage>(msg => { });
+            Player.RegisterHandler<NetworkPongMessage>(msg => { });
         }
 
         internal void RegisterMessageHandlers()
         {
-            Connection.RegisterHandler<NetworkPongMessage>(Time.OnClientPong);
+            Player.RegisterHandler<NetworkPongMessage>(Time.OnClientPong);
         }
 
 

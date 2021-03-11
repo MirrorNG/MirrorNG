@@ -286,7 +286,7 @@ namespace Mirage
             if (conn == Server.LocalConnection)
             {
                 identity.HasAuthority = true;
-                Server.LocalClient.Connection.Identity = identity;
+                Server.LocalClient.Player.Identity = identity;
             }
 
             // set ready if not set yet
@@ -342,7 +342,7 @@ namespace Mirage
             if (conn == Server.LocalConnection)
             {
                 identity.HasAuthority = true;
-                Server.LocalClient.Connection.Identity = identity;
+                Server.LocalClient.Player.Identity = identity;
             }
 
             // add connection to observers AFTER the playerController was set.

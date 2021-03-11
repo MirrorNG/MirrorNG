@@ -21,7 +21,7 @@ namespace Mirage.Examples.MultipleAdditiveScenes
         void OnGUI()
         {
             if (!IsLocalPlayer && clientMatchIndex < 0)
-                clientMatchIndex = Client.Connection.Identity.GetComponent<PlayerScore>().matchIndex;
+                clientMatchIndex = Client.Player.Identity.GetComponent<PlayerScore>().matchIndex;
 
             if (IsLocalPlayer || matchIndex == clientMatchIndex)
                 GUI.Box(new Rect(10f + (scoreIndex * 110), 10f, 100f, 25f), $"P{playerNumber}: {score}");
