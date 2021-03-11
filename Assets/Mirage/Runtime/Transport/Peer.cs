@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace Mirage.SocketLayer
 {
-    public struct Config
+    public class Time
     {
-        public int MaxConnections;
+        public float Now => UnityEngine.Time.time;
     }
     /// <summary>
     /// Controls flow of data in/out of mirage, Uses <see cref="ISocket"/>
@@ -21,6 +21,7 @@ namespace Mirage.SocketLayer
 
         readonly ISocket socket;
         readonly Config config;
+        readonly Time time;
 
         readonly Dictionary<EndPoint, Connection> connections;
 
@@ -32,21 +33,36 @@ namespace Mirage.SocketLayer
         {
             this.socket = socket ?? throw new ArgumentNullException(nameof(socket));
             this.config = config;
+            time = new Time();
         }
 
         public void SendNotify() => throw new NotImplementedException();
         public void SendUnreliable() => throw new NotImplementedException();
 
+        private void Send(Connection connection, Packet packet) => Send(connection, packet.data, packet.length);
         private void Send(Connection connection, byte[] data, int? length = null)
         {
             socket.Send(connection.EndPoint, data, length);
+            connection.SetSendTime();
         }
-        private void SendUnconnected(EndPoint endPoint, byte[] data, int? length = null)
+        private void SendUnconnected(EndPoint endPoint, Packet packet) => SendUnconnected(endPoint, packet.data, packet.length);
+        internal void SendUnconnected(EndPoint endPoint, byte[] data, int? length = null)
         {
             socket.Send(endPoint, data, length);
         }
 
-        private void SendCommandUnconnected(EndPoint endPoint, Commands command, byte? extra = null)
+        internal void SendCommandUnconnected(EndPoint endPoint, Commands command, byte? extra = null)
+        {
+            Packet packet = CreateCommandPacket(command, extra);
+            SendUnconnected(endPoint, packet);
+        }
+
+        internal void SendCommand(Connection connection, Commands command, byte? extra = null)
+        {
+            Packet packet = CreateCommandPacket(command, extra);
+            Send(connection, packet);
+        }
+        private Packet CreateCommandPacket(Commands command, byte? extra = null)
         {
             commandBuffer[0] = (byte)PacketType.Command;
             commandBuffer[1] = (byte)command;
@@ -54,28 +70,18 @@ namespace Mirage.SocketLayer
             if (extra.HasValue)
             {
                 commandBuffer[2] = extra.Value;
-                SendUnconnected(endPoint, commandBuffer, 3);
+                return new Packet(commandBuffer, 3);
             }
             else
             {
-                SendUnconnected(endPoint, commandBuffer, 2);
+                return new Packet(commandBuffer, 2);
             }
         }
 
-        private void SendCommand(Connection connection, Commands command, byte? extra = null)
+        internal void SendKeepAlive(Connection connection)
         {
-            commandBuffer[0] = (byte)PacketType.Command;
-            commandBuffer[1] = (byte)command;
-
-            if (extra.HasValue)
-            {
-                commandBuffer[2] = extra.Value;
-                Send(connection, commandBuffer, 3);
-            }
-            else
-            {
-                Send(connection, commandBuffer, 2);
-            }
+            commandBuffer[0] = (byte)PacketType.KeepAlive;
+            Send(connection, commandBuffer, 1);
         }
 
         public void Tick()
@@ -93,14 +99,22 @@ namespace Mirage.SocketLayer
                 EndPoint endPoint = null;
                 socket.Recieve(buffer, ref endPoint, out int length);
 
-                var segment = new ArraySegment<byte>(buffer, 0, length);
+                var packet = new Packet(buffer, length);
+
+                if (!packet.IsValidSize())
+                {
+                    // handle message that are too small
+                    throw new NotImplementedException();
+                }
+
+
                 if (connections.TryGetValue(endPoint, out Connection connection))
                 {
-                    HandleMessage(connection, segment);
+                    HandleMessage(connection, packet);
                 }
                 else
                 {
-                    HandleNewConnection(endPoint, segment);
+                    HandleNewConnection(endPoint, packet);
                 }
             }
         }
@@ -110,15 +124,40 @@ namespace Mirage.SocketLayer
             throw new NotImplementedException();
         }
 
-        private void HandleMessage(Connection connection, ArraySegment<byte> segment)
+
+        private void HandleMessage(Connection connection, Packet packet)
         {
-            IMessageReceiver receiver = getReceiver(connection);
-            receiver.TransportReceive(segment);
+            switch (packet.type)
+            {
+                case PacketType.Command:
+                    HandleCommand(connection, packet);
+                    break;
+                case PacketType.Unreliable:
+                case PacketType.Notify:
+                    // todo are these handled differently?
+                    IMessageReceiver receiver = getReceiver(connection);
+                    receiver.TransportReceive(packet.ToSegment());
+                    break;
+                case PacketType.KeepAlive:
+                    // do nothing
+                    break;
+                default:
+                    // handle message invalid packet type
+                    throw new NotImplementedException();
+            }
+
+            connection.SetReceiveTime();
         }
-        private void HandleNewConnection(EndPoint endPoint, ArraySegment<byte> segment)
+
+        private void HandleCommand(Connection connection, Packet packet)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleNewConnection(EndPoint endPoint, Packet packet)
         {
             // if invalid, then reject without reason
-            if (Validate(endPoint, segment)) { return; }
+            if (Validate(endPoint, packet)) { return; }
 
             if (AtMaxConnections())
             {
@@ -130,7 +169,7 @@ namespace Mirage.SocketLayer
             }
         }
 
-        private bool Validate(EndPoint endPoint, ArraySegment<byte> segment)
+        private bool Validate(EndPoint endPoint, Packet packet)
         {
             // todo do security stuff here:
             // - connect request
@@ -147,8 +186,8 @@ namespace Mirage.SocketLayer
         {
             if (logger.LogEnabled()) logger.Log($"Accepting new connection from:{endPoint}");
 
-            var connection = new Connection(endPoint, config);
-            connection.LastRecvPacketTime = Time.time;
+            var connection = new Connection(this, endPoint, config, time);
+            connection.LastRecvPacketTime = time.Now;
             connections.Add(endPoint, connection);
 
             switch (connection.State)
@@ -180,90 +219,95 @@ namespace Mirage.SocketLayer
             throw new NotImplementedException();
         }
 
-
         void UpdateConnections()
         {
             foreach (KeyValuePair<EndPoint, Connection> kvp in connections)
             {
-                UpdateConnection(kvp.Value);
-            }
-        }
-        void UpdateConnection(Connection connection)
-        {
-            switch (connection.State)
-            {
-                case ConnectionState.Connecting:
-                    UpdateConnecting(connection);
-                    break;
-
-                case ConnectionState.Connected:
-                    UpdateConnected(connection);
-                    break;
-
-                case ConnectionState.Disconnected:
-                    UpdateDisconnected(connection);
-                    break;
-            }
-        }
-
-        void UpdateConnecting(Connection connection)
-        {
-            if ((connection.ConnectionAttemptTime + _config.ConnectAttemptInterval) < _clock.ElapsedInSeconds)
-            {
-                if (connection.ConnectionAttempts == _config.MaxConnectAttempts)
-                {
-                    Assert.AlwaysFail("connection failed handle this with a callback");
-                    return;
-                }
-
-                connection.ConnectionAttempts += 1;
-                connection.ConnectionAttemptTime = _clock.ElapsedInSeconds;
-
-                SendCommand(connection, Commands.ConnectRequest);
-            }
-        }
-        void UpdateDisconnected(Connection connection)
-        {
-            if ((connection.DisconnectTime + _config.DisconnectIdleTime) < _clock.ElapsedInSeconds)
-            {
-                RemoveConnection(connection);
-            }
-        }
-
-        void UpdateConnected(Connection connection)
-        {
-            if ((connection.LastRecvPacketTime + _config.ConnectionTimeout) < _clock.ElapsedInSeconds)
-            {
-                DisconnectConnection(connection, DisconnectedReason.Timeout);
-            }
-
-            if ((connection.LastSentPacketTime + _config.KeepAliveInterval) < _clock.ElapsedInSeconds)
-            {
-                Send(connection, new byte[1] { (byte)PacketTypes.KeepAlive });
+                kvp.Value.Update();
             }
         }
     }
-
-
-    public enum PacketType
+    internal struct Packet
     {
+        const int MinSize = 1;
+
+        public byte[] data;
+        public int length;
+
+        public Packet(byte[] data, int length)
+        {
+            this.data = data ?? throw new ArgumentNullException(nameof(data));
+            this.length = length;
+        }
+
+        public bool IsValidSize()
+        {
+            return length >= MinSize;
+        }
+
+        public PacketType type => (PacketType)data[0];
+
+        public ArraySegment<byte> ToSegment()
+        {
+            return new ArraySegment<byte>(data, 0, length);
+        }
+    }
+
+    internal enum PacketType
+    {
+        /// <summary>
+        /// see <see cref="Commands"/>
+        /// </summary>
         Command = 1,
+
         Unreliable = 2,
         Notify = 3,
-        KeepAlive = 4
+
+        /// <summary>
+        /// Used to keep connection alive.
+        /// <para>Similar to ping/pong</para>
+        /// </summary>
+        KeepAlive = 4,
     }
 
-    public enum Commands
+    /// <summary>
+    /// Small message used to control a connection
+    /// <para>
+    ///     <see cref="PacketType"/> and Commands uses their own byte/enum to split up the flow and add struture to the code.
+    /// </para>
+    /// </summary>
+    internal enum Commands
     {
-        None = 0,
-        ConnectionAccepted = 1,
-        ConnectionRejected = 1,
+        /// <summary>
+        /// Sent from client to request to connect to server
+        /// </summary>
+        ConnectRequest = 1,
+
+        /// <summary>
+        /// Sent when Server accepts client
+        /// </summary>
+        ConnectionAccepted = 2,
+
+        /// <summary>
+        /// Sent when server rejects client
+        /// </summary>
+        ConnectionRejected = 3,
+
+        /// <summary>
+        /// Sent from client or server to close connection
+        /// </summary>
+        Disconnect = 4,
     }
-    enum RejectReason
+
+    /// <summary>
+    /// Reson for reject sent from server
+    /// </summary>
+    internal enum RejectReason
     {
         None = 0,
         ServerFull = 1,
     }
+
     // todo how should we use this?
     public sealed class PeerDebug
     {
