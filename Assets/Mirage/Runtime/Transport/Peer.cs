@@ -34,18 +34,18 @@ namespace Mirage.SocketLayer
             this.config = config;
         }
 
-        public void Send(Connection connection, byte[] data, int? length = null)
+        private void Send(Connection connection, byte[] data, int? length = null)
         {
             socket.Send(connection.EndPoint, data, length);
         }
-        public void SendUnconnected(EndPoint endPoint, byte[] data, int? length = null)
+        private void SendUnconnected(EndPoint endPoint, byte[] data, int? length = null)
         {
             socket.Send(endPoint, data, length);
         }
 
-        public void SendCommandUnconnected(EndPoint endPoint, Commands command, byte? extra = null)
+        private void SendCommandUnconnected(EndPoint endPoint, Commands command, byte? extra = null)
         {
-            commandBuffer[0] = (byte)Messages.Command;
+            commandBuffer[0] = (byte)PacketType.Command;
             commandBuffer[1] = (byte)command;
 
             if (extra.HasValue)
@@ -58,9 +58,10 @@ namespace Mirage.SocketLayer
                 SendUnconnected(endPoint, commandBuffer, 2);
             }
         }
-        public void SendCommand(Connection connection, Commands command, byte? extra = null)
+
+        private void SendCommand(Connection connection, Commands command, byte? extra = null)
         {
-            commandBuffer[0] = (byte)Messages.Command;
+            commandBuffer[0] = (byte)PacketType.Command;
             commandBuffer[1] = (byte)command;
 
             if (extra.HasValue)
@@ -177,11 +178,14 @@ namespace Mirage.SocketLayer
     }
 
 
-    public enum Messages
+    public enum PacketType
     {
-        None = 0,
         Command = 1,
+        Unreliable = 2,
+        Notify = 3,
+        KeepAlive = 4
     }
+
     public enum Commands
     {
         None = 0,
