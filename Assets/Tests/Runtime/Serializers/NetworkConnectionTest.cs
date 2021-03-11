@@ -7,7 +7,7 @@ namespace Mirage.Tests
 {
     public class NetworkConnectionTest
     {
-        private NetworkConnection connection;
+        private NetworkPlayer connection;
         private byte[] serializedMessage;
         private IConnection mockTransportConnection;
 

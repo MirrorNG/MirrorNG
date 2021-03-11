@@ -17,7 +17,7 @@ namespace Mirage.Tests.Host
         [Test]
         public void SetClientReadyAndNotReadyTest()
         {
-            (_, NetworkConnection connection) = PipedConnections();
+            (_, NetworkPlayer connection) = PipedConnections();
             Assert.That(connection.IsReady, Is.False);
 
             serverObjectManager.SetClientReady(connection);
@@ -31,12 +31,12 @@ namespace Mirage.Tests.Host
         public void SetAllClientsNotReadyTest()
         {
             // add first ready client
-            (_, NetworkConnection first) = PipedConnections();
+            (_, NetworkPlayer first) = PipedConnections();
             first.IsReady = true;
             server.connections.Add(first);
 
             // add second ready client
-            (_, NetworkConnection second) = PipedConnections();
+            (_, NetworkPlayer second) = PipedConnections();
             second.IsReady = true;
             server.connections.Add(second);
 
@@ -74,7 +74,7 @@ namespace Mirage.Tests.Host
         {
             // add connection
 
-            NetworkConnection connectionToClient = Substitute.For<NetworkConnection>(Substitute.For<IConnection>());
+            NetworkPlayer connectionToClient = Substitute.For<NetworkPlayer>(Substitute.For<IConnection>());
 
             NetworkIdentity identity = new GameObject().AddComponent<NetworkIdentity>();
 

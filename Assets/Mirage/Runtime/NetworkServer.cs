@@ -313,7 +313,7 @@ namespace Mirage
         /// </summary>
         public virtual INetworkConnection GetNewConnection(Connection connection)
         {
-            return new NetworkConnection(connection);
+            return new NetworkPlayer(connection);
         }
 
         /// <summary>
@@ -372,7 +372,7 @@ namespace Mirage
         public void SendToAll<T>(T msg, int channelId = Channel.Reliable)
         {
             if (logger.LogEnabled()) logger.Log("Server.SendToAll id:" + typeof(T));
-            NetworkConnection.Send(connections, msg, channelId);
+            NetworkPlayer.Send(connections, msg, channelId);
         }
 
         async UniTaskVoid ConnectionAcceptedAsync(INetworkConnection conn)

@@ -39,7 +39,7 @@ namespace Mirage.Tests.Host
         [Test]
         public void ConnectionClearHandlersTest()
         {
-            var clientConn = client.Connection as NetworkConnection;
+            var clientConn = client.Connection as NetworkPlayer;
 
             Assert.That(clientConn.messageHandlers.Count > 0);
 

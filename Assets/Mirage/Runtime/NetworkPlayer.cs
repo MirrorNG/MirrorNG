@@ -24,9 +24,9 @@ namespace Mirage
     /// <para>NetworkConnection objects also act as observers for networked objects. When a connection is an observer of a networked object with a NetworkIdentity, then the object will be visible to corresponding client for the connection, and incremental state changes will be sent to the client.</para>
     /// <para>There are many virtual functions on NetworkConnection that allow its behaviour to be customized. NetworkClient and NetworkServer can both be made to instantiate custom classes derived from NetworkConnection by setting their networkConnectionClass member variable.</para>
     /// </remarks>
-    public class NetworkConnection : INetworkConnection
+    public class NetworkPlayer : INetworkConnection
     {
-        static readonly ILogger logger = LogFactory.GetLogger(typeof(NetworkConnection));
+        static readonly ILogger logger = LogFactory.GetLogger(typeof(NetworkPlayer));
 
         // Handles network messages on client and server
         internal delegate void NetworkMessageDelegate(INetworkConnection conn, NetworkReader reader, int channelId);
@@ -45,7 +45,7 @@ namespace Mirage
         /// <para>Transport layers connections begin at one. So on a client with a single connection to a server, the connectionId of that connection will be one. In NetworkServer, the connectionId of the local connection is zero.</para>
         /// <para>Clients do not know their connectionId on the server, and do not know the connectionId of other clients on the server.</para>
         /// </remarks>
-        private readonly IConnection connection;
+        private readonly Connection connection;
 
         /// <summary>
         /// General purpose object to hold authentication data, character selection, tokens, etc.
@@ -84,7 +84,7 @@ namespace Mirage
         /// Creates a new NetworkConnection with the specified address and connectionId
         /// </summary>
         /// <param name="networkConnectionId"></param>
-        public NetworkConnection(Connection connection)
+        public NetworkPlayer(Connection connection)
         {
             Assert.IsNotNull(connection);
             this.connection = connection;

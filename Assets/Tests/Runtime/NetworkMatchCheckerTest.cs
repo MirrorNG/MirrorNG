@@ -17,9 +17,9 @@ namespace Mirage.Tests
         private GameObject player3;
         private NetworkMatchChecker player1MatchChecker;
         private NetworkMatchChecker player2MatchChecker;
-        private NetworkConnection player1Connection;
-        private NetworkConnection player2Connection;
-        private NetworkConnection player3Connection;
+        private NetworkPlayer player1Connection;
+        private NetworkPlayer player2Connection;
+        private NetworkPlayer player3Connection;
         private Dictionary<Guid, HashSet<NetworkIdentity>> matchPlayers;
 
         [SetUp]
@@ -61,7 +61,7 @@ namespace Mirage.Tests
             return (Dictionary<Guid, HashSet<NetworkIdentity>>)fieldInfo.GetValue(null);
         }
 
-        static NetworkConnection CreateNetworkConnection(GameObject player)
+        static NetworkPlayer CreateNetworkConnection(GameObject player)
         {
             (IConnection conn1, IConnection _) = PipeConnection.CreatePipe();
 

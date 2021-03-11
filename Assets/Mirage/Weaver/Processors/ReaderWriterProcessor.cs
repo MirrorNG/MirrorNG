@@ -223,9 +223,9 @@ namespace Mirage.Weaver
                 method.Is<IMessageSender>(nameof(IMessageSender.Send)) ||
                 method.Is<IMessageSender>(nameof(IMessageReceiver.RegisterHandler)) ||
                 method.Is<IMessageSender>(nameof(IMessageReceiver.UnregisterHandler)) ||
-                method.Is<NetworkConnection>(nameof(NetworkConnection.Send)) ||
-                method.Is<NetworkConnection>(nameof(NetworkConnection.RegisterHandler)) ||
-                method.Is<NetworkConnection>(nameof(NetworkConnection.UnregisterHandler)) ||
+                method.Is<NetworkPlayer>(nameof(NetworkPlayer.Send)) ||
+                method.Is<NetworkPlayer>(nameof(NetworkPlayer.RegisterHandler)) ||
+                method.Is<NetworkPlayer>(nameof(NetworkPlayer.UnregisterHandler)) ||
                 method.Is<NetworkClient>(nameof(NetworkClient.Send)) ||
                 method.Is<NetworkServer>(nameof(NetworkServer.SendToAll)) ||
                 method.Is<INetworkServer>(nameof(INetworkServer.SendToAll));

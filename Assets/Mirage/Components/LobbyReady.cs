@@ -36,7 +36,7 @@ namespace Mirage
                 }
             }
 
-            NetworkConnection.Send(connectionsCache, msg, channelId);
+            NetworkPlayer.Send(connectionsCache, msg, channelId);
         }
     }
 }
