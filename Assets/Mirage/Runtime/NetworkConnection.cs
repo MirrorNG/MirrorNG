@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using Cysharp.Threading.Tasks;
+using Mirage.SocketLayer;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -83,7 +84,7 @@ namespace Mirage
         /// Creates a new NetworkConnection with the specified address and connectionId
         /// </summary>
         /// <param name="networkConnectionId"></param>
-        public NetworkConnection(IConnection connection)
+        public NetworkConnection(Connection connection)
         {
             Assert.IsNotNull(connection);
             this.connection = connection;

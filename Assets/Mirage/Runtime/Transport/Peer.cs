@@ -65,6 +65,13 @@ namespace Mirage.SocketLayer
             connection.Update();
         }
 
+        public void Close()
+        {
+            socket.Close();
+            // todo clean up other state
+            throw new NotImplementedException();
+        }
+
         public void SendNotify() => throw new NotImplementedException();
         public void SendUnreliable() => throw new NotImplementedException();
 
@@ -206,6 +213,7 @@ namespace Mirage.SocketLayer
                     throw new NotImplementedException();
             }
         }
+
 
         private void HandleNewConnection(EndPoint endPoint, Packet packet)
         {
@@ -471,6 +479,9 @@ namespace Mirage.SocketLayer
     {
         public abstract ISocket CreateClientSocket();
         public abstract ISocket CreateServerSocket();
+
+        public abstract EndPoint GetBindEndPoint();
+        public abstract EndPoint GetConnectEndPoint();
 
         public abstract bool ClientSupported { get; }
         public abstract bool ServerSupported { get; }

@@ -20,7 +20,7 @@ namespace Mirage
             networkClient.Transport = transport;
 
             NetworkServer networkServer = go.GetComponent<NetworkServer>();
-            networkServer.Transport = transport;
+            networkServer.peer = transport;
 
             ServerObjectManager serverObjectManager = go.GetComponent<ServerObjectManager>();
             serverObjectManager.Server = networkServer;

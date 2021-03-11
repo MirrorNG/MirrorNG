@@ -50,7 +50,7 @@ namespace Mirage.Tests.ClientServer
             server = serverGo.GetComponent<NetworkServer>();
             client = clientGo.GetComponent<NetworkClient>();
 
-            server.Transport = testTransport;
+            server.peer = testTransport;
             client.Transport = testTransport;
 
             serverSceneManager = serverGo.GetComponent<NetworkSceneManager>();

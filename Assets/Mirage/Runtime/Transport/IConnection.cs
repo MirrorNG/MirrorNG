@@ -15,6 +15,7 @@ namespace Mirage
         public const int Unreliable = 1;
     }
 
+    [System.Obsolete("Use Peer and Connection instead")]
     public interface IConnection
     {
         void Send(ArraySegment<byte> data, int channel = Channel.Reliable);
