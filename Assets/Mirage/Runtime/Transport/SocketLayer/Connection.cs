@@ -26,7 +26,8 @@ namespace Mirage.SocketLayer
 
     public interface IPlayer
     {
-
+        // todo move this to different interface
+        void Receive(ArraySegment<byte> segment);
     }
 
     public sealed class Connection
@@ -132,6 +133,17 @@ namespace Mirage.SocketLayer
         {
             throw new NotImplementedException();
         }
+
+        internal void ReceivePacket(Packet packet)
+        {
+            ArraySegment<byte> segment = packet.ToSegment();
+            foreach (IPlayer player in players)
+            {
+                // todo move this from player to something else
+                player.Receive(segment);
+            }
+        }
+
 
         /// <summary>
         /// client connecting attempts

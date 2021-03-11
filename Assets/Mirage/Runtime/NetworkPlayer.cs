@@ -17,7 +17,7 @@ namespace Mirage
     /// <para>NetworkConnection objects also act as observers for networked objects. When a connection is an observer of a networked object with a NetworkIdentity, then the object will be visible to corresponding client for the connection, and incremental state changes will be sent to the client.</para>
     /// <para>There are many virtual functions on NetworkConnection that allow its behaviour to be customized. NetworkClient and NetworkServer can both be made to instantiate custom classes derived from NetworkConnection by setting their networkConnectionClass member variable.</para>
     /// </remarks>
-    public class NetworkPlayer : INetworkPlayer, IVisibilityTracker, IObjectOwner, IPlayer
+    public sealed class NetworkPlayer : INetworkPlayer, IVisibilityTracker, IObjectOwner, IPlayer
     {
         static readonly ILogger logger = LogFactory.GetLogger(typeof(NetworkPlayer));
 
@@ -38,7 +38,7 @@ namespace Mirage
         /// <para>Transport layers connections begin at one. So on a client with a single connection to a server, the connectionId of that connection will be one. In NetworkServer, the connectionId of the local connection is zero.</para>
         /// <para>Clients do not know their connectionId on the server, and do not know the connectionId of other clients on the server.</para>
         /// </remarks>
-        private readonly Connection connection;
+        public Connection Connection { get; }
 
         /// <summary>
         /// General purpose object to hold authentication data, character selection, tokens, etc.
@@ -74,16 +74,19 @@ namespace Mirage
         public NetworkPlayer(Connection connection)
         {
             Assert.IsNotNull(connection);
-            this.connection = connection;
+            Connection = connection;
         }
 
         /// <summary>
         /// Disconnects this connection.
         /// </summary>
-        public virtual void Disconnect()
+        public void Disconnect()
         {
-            connection.DisconnectPlayer(this);
+            Connection.DisconnectPlayer(this);
         }
+
+        // todo remove channel
+        void IPlayer.Receive(ArraySegment<byte> segment) => TransportReceive(segment, default);
 
         private static NetworkMessageDelegate MessageHandler<T>(Action<INetworkPlayer, T> handler)
         {
@@ -171,7 +174,7 @@ namespace Mirage
         /// <param name="msg">The message to send.</param>
         /// <param name="channelId">The transport layer channel to send on.</param>
         /// <returns></returns>
-        public virtual void Send<T>(T msg, int channelId = Channel.Reliable)
+        public void Send<T>(T msg, int channelId = Channel.Reliable)
         {
             using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
             {
@@ -292,11 +295,6 @@ namespace Mirage
 
             // clear the hashset because we destroyed them all
             clientOwnedObjects.Clear();
-        }
-
-        public void Disconnect()
-        {
-            connection.DisconnectPlayer(this);
         }
     }
 }
