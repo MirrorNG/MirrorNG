@@ -109,12 +109,12 @@ namespace Mirage
         /// <summary>
         /// The <see cref="NetworkPlayer">NetworkConnection</see> associated with this <see cref="NetworkIdentity">NetworkIdentity.</see> This is only valid for player objects on the client.
         /// </summary>
-        public INetworkPlayer ConnectionToServer => NetIdentity.ConnectionToServer;
+        public NetworkPlayer ConnectionToServer => NetIdentity.ConnectionToServer;
 
         /// <summary>
         /// The <see cref="NetworkPlayer">NetworkConnection</see> associated with this <see cref="NetworkIdentity">NetworkIdentity.</see> This is only valid for player objects on the server.
         /// </summary>
-        public INetworkPlayer ConnectionToClient => NetIdentity.ConnectionToClient;
+        public NetworkPlayer ConnectionToClient => NetIdentity.ConnectionToClient;
 
         /// <summary>
         /// Returns the appropriate NetworkTime instance based on if this NetworkBehaviour is running as a Server or Client.
@@ -321,7 +321,7 @@ namespace Mirage
             NetIdentity.SendToObservers(message, includeOwner, channelId);
         }
 
-        protected internal void SendTargetRpcInternal(INetworkPlayer conn, Type invokeClass, string rpcName, NetworkWriter writer, int channelId)
+        protected internal void SendTargetRpcInternal(INetworkPlayer player, Type invokeClass, string rpcName, NetworkWriter writer, int channelId)
         {
             // this was in Weaver before
             if (!Server || !Server.Active)
@@ -330,9 +330,9 @@ namespace Mirage
             }
 
             // connection parameter is optional. assign if null.
-            if (conn == null)
+            if (player == null)
             {
-                conn = ConnectionToClient;
+                player = ConnectionToClient;
             }
 
             // This cannot use Server.active, as that is not specific to this object.
@@ -353,7 +353,7 @@ namespace Mirage
                 payload = writer.ToArraySegment()
             };
 
-            conn.Send(message, channelId);
+            player.Connection.Send(message, channelId);
         }
         #endregion
 
