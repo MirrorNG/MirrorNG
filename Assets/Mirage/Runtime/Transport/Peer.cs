@@ -9,6 +9,19 @@ namespace Mirage.SocketLayer
     {
         public float Now => UnityEngine.Time.time;
     }
+    internal class ConnectKeyValidator
+    {
+        // todo pass in key instead of having constant
+        readonly byte[] key = new[] { (byte)'H' };
+
+        public bool Validate(Packet packet)
+        {
+            byte keyByte = packet.data[2];
+
+            return keyByte == key[0];
+        }
+    }
+
     /// <summary>
     /// Controls flow of data in/out of mirage, Uses <see cref="ISocket"/>
     /// </summary>
@@ -23,6 +36,8 @@ namespace Mirage.SocketLayer
         readonly Config config;
         readonly Time time;
 
+        readonly ConnectKeyValidator connectKeyValidator;
+
         readonly Dictionary<EndPoint, Connection> connections;
 
         readonly byte[] commandBuffer = new byte[3];
@@ -35,6 +50,19 @@ namespace Mirage.SocketLayer
             this.socket = socket ?? throw new ArgumentNullException(nameof(socket));
             this.config = config;
             time = new Time();
+
+            connectKeyValidator = new ConnectKeyValidator();
+        }
+
+
+        public void Bind(EndPoint endPoint) => socket.Bind(endPoint);
+        public void Connect(EndPoint endPoint)
+        {
+            Connection connection = CreateNewConnection(endPoint);
+            connection.ChangeState(ConnectionState.Connecting);
+
+            // update now to send connectRequest command
+            connection.Update();
         }
 
         public void SendNotify() => throw new NotImplementedException();
@@ -85,7 +113,7 @@ namespace Mirage.SocketLayer
             Send(connection, commandBuffer, 1);
         }
 
-        public void Tick()
+        public void Update()
         {
             ReceiveLoop();
             UpdateConnections();
@@ -200,6 +228,19 @@ namespace Mirage.SocketLayer
             // - connect request
             // - simple key/phrase send from client with first message
             // - hashcash??
+
+            if (packet.type != PacketType.Command)
+                return false;
+
+            if (packet.command != Commands.ConnectRequest)
+                return false;
+
+            if (!connectKeyValidator.Validate(packet))
+                return false;
+
+            //if (!hashCashValidator.Validate(packet))
+            //    return false;
+
             return true;
         }
 
@@ -211,11 +252,17 @@ namespace Mirage.SocketLayer
         {
             if (logger.LogEnabled()) logger.Log($"Accepting new connection from:{endPoint}");
 
-            var connection = new Connection(this, endPoint, config, time);
-            connection.LastRecvPacketTime = time.Now;
-            connections.Add(endPoint, connection);
+            Connection connection = CreateNewConnection(endPoint);
 
             HandleConnectionRequest(connection);
+        }
+
+        private Connection CreateNewConnection(EndPoint endPoint)
+        {
+            var connection = new Connection(this, endPoint, config, time);
+            connection.SetReceiveTime();
+            connections.Add(endPoint, connection);
+            return connection;
         }
 
         private void HandleConnectionRequest(Connection connection)
@@ -294,8 +341,6 @@ namespace Mirage.SocketLayer
             throw new NotImplementedException();
         }
 
-
-
         void UpdateConnections()
         {
             foreach (KeyValuePair<EndPoint, Connection> kvp in connections)
@@ -303,7 +348,6 @@ namespace Mirage.SocketLayer
                 kvp.Value.Update();
             }
         }
-
     }
     internal struct Packet
     {

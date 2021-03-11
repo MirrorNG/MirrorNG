@@ -14,13 +14,6 @@ namespace Mirage.SocketLayer
         /// <param name="endPoint"></param>
         void Bind(EndPoint endPoint);
 
-        /// <summary>
-        /// Connects to an endpoint
-        /// <para>Used by clients to connect to server</para>
-        /// </summary>
-        /// <param name="endPoint"></param>
-        void Connect(EndPoint endPoint);
-
         void Close();
 
         /// <summary>

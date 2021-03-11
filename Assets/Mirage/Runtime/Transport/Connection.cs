@@ -54,8 +54,6 @@ namespace Mirage.SocketLayer
             disconnectedTracker = new DisconnectedTracker();
         }
 
-        public float LastRecvPacketTime { get; internal set; }
-
         public void ChangeState(ConnectionState state)
         {
             switch (state)
@@ -76,8 +74,6 @@ namespace Mirage.SocketLayer
             if (logger.LogEnabled()) logger.Log($"{EndPoint} changed state from {State} to {state}");
             State = state;
         }
-
-
 
         public void Update()
         {
@@ -154,8 +150,8 @@ namespace Mirage.SocketLayer
         {
             private readonly Config config;
             private readonly Time time;
-            float lastAttempt;
-            int AttemptCount;
+            float lastAttempt = float.MinValue;
+            int AttemptCount = 0;
 
             public ConnectingTracker(Config config, Time time)
             {
@@ -182,7 +178,7 @@ namespace Mirage.SocketLayer
 
         class TimeoutTracker
         {
-            float lastRecvTime;
+            float lastRecvTime = float.MinValue;
             readonly Config config;
             readonly Time time;
 
@@ -204,7 +200,7 @@ namespace Mirage.SocketLayer
         }
         class KeepAliveTracker
         {
-            float lastSendTime;
+            float lastSendTime = float.MinValue;
             readonly Config config;
             readonly Time time;
 
