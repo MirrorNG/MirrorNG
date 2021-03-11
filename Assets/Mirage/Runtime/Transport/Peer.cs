@@ -34,7 +34,6 @@ namespace Mirage.SocketLayer
             this.config = config;
         }
 
-
         public void SendNotify() => throw new NotImplementedException();
         public void SendUnreliable() => throw new NotImplementedException();
 
@@ -82,6 +81,7 @@ namespace Mirage.SocketLayer
         public void Tick()
         {
             ReceiveLoop();
+            UpdateConnections();
         }
 
         private void ReceiveLoop()
@@ -179,6 +179,69 @@ namespace Mirage.SocketLayer
         {
             throw new NotImplementedException();
         }
+
+
+        void UpdateConnections()
+        {
+            foreach (KeyValuePair<EndPoint, Connection> kvp in connections)
+            {
+                UpdateConnection(kvp.Value);
+            }
+        }
+        void UpdateConnection(Connection connection)
+        {
+            switch (connection.State)
+            {
+                case ConnectionState.Connecting:
+                    UpdateConnecting(connection);
+                    break;
+
+                case ConnectionState.Connected:
+                    UpdateConnected(connection);
+                    break;
+
+                case ConnectionState.Disconnected:
+                    UpdateDisconnected(connection);
+                    break;
+            }
+        }
+
+        void UpdateConnecting(Connection connection)
+        {
+            if ((connection.ConnectionAttemptTime + _config.ConnectAttemptInterval) < _clock.ElapsedInSeconds)
+            {
+                if (connection.ConnectionAttempts == _config.MaxConnectAttempts)
+                {
+                    Assert.AlwaysFail("connection failed handle this with a callback");
+                    return;
+                }
+
+                connection.ConnectionAttempts += 1;
+                connection.ConnectionAttemptTime = _clock.ElapsedInSeconds;
+
+                SendCommand(connection, Commands.ConnectRequest);
+            }
+        }
+        void UpdateDisconnected(Connection connection)
+        {
+            if ((connection.DisconnectTime + _config.DisconnectIdleTime) < _clock.ElapsedInSeconds)
+            {
+                RemoveConnection(connection);
+            }
+        }
+
+        void UpdateConnected(Connection connection)
+        {
+            if ((connection.LastRecvPacketTime + _config.ConnectionTimeout) < _clock.ElapsedInSeconds)
+            {
+                DisconnectConnection(connection, DisconnectedReason.Timeout);
+            }
+
+            if ((connection.LastSentPacketTime + _config.KeepAliveInterval) < _clock.ElapsedInSeconds)
+            {
+                Send(connection, new byte[1] { (byte)PacketTypes.KeepAlive });
+            }
+        }
     }
 
 
@@ -201,57 +264,6 @@ namespace Mirage.SocketLayer
         None = 0,
         ServerFull = 1,
     }
-    public enum ConnectionState
-    {
-        Created = 1,
-        Connecting = 2,
-        Connected = 3,
-
-        // ..
-
-        Disconnected = 9,
-        Destroyed = 10,
-    }
-    public sealed class Connection
-    {
-        static readonly ILogger logger = LogFactory.GetLogger<Connection>();
-
-        public ConnectionState State { get; private set; }
-        public readonly EndPoint EndPoint;
-        private readonly Config config;
-
-        public Connection(EndPoint endPoint, Config config)
-        {
-            EndPoint = endPoint ?? throw new ArgumentNullException(nameof(endPoint));
-            this.config = config;
-
-            State = ConnectionState.Created;
-        }
-
-        public float LastRecvPacketTime { get; internal set; }
-
-        public void ChangeState(ConnectionState state)
-        {
-            switch (state)
-            {
-                case ConnectionState.Connected:
-                    logger.Assert(State == ConnectionState.Created || State == ConnectionState.Connecting);
-                    break;
-
-                case ConnectionState.Connecting:
-                    logger.Assert(State == ConnectionState.Created);
-                    break;
-
-                case ConnectionState.Disconnected:
-                    logger.Assert(State == ConnectionState.Connected);
-                    break;
-            }
-
-            if (logger.LogEnabled()) logger.Log($"{EndPoint} changed state from {State} to {state}");
-            State = state;
-        }
-    }
-
     // todo how should we use this?
     public sealed class PeerDebug
     {
