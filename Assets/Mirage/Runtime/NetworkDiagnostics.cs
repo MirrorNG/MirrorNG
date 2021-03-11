@@ -48,6 +48,7 @@ namespace Mirage
         /// </summary>
         public static event Action<MessageInfo> OutMessageEvent;
 
+        internal static void OnSend<T>(T message, bool reliable, int bytes, int count) => OnSend(message, reliable ? Channel.Reliable : Channel.Unreliable, bytes, count);
         internal static void OnSend<T>(T message, int channel, int bytes, int count)
         {
             if (count > 0 && OutMessageEvent != null)

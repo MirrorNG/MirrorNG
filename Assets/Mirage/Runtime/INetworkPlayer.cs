@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using Mirage.SocketLayer;
 
 namespace Mirage
 {
@@ -62,9 +63,14 @@ namespace Mirage
     /// A connection to a remote endpoint.
     /// May be from the server to client or from client to server
     /// </summary>
-    public interface INetworkPlayer : IVisibilityTracker, IObjectOwner
+
+    [System.Obsolete("Use IVisibilityTracker, IObjectOwner, IPlayer Instead")]
+    public interface INetworkPlayer : IVisibilityTracker, IObjectOwner, IPlayer
     {
+        Connection Connection { get; }
         bool IsReady { get; set; }
         object AuthenticationData { get; set; }
+
+        void Disconnect();
     }
 }

@@ -73,6 +73,7 @@ namespace Mirage.SocketLayer
         }
 
         public void SendNotify(Connection connection) => throw new NotImplementedException();
+        public void SendReliable(Connection connection) => throw new NotImplementedException();
         public void SendUnreliable(Connection connection) => throw new NotImplementedException();
 
         private void Send(Connection connection, Packet packet) => Send(connection, packet.data, packet.length);

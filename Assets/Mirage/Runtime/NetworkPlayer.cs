@@ -17,7 +17,7 @@ namespace Mirage
     /// <para>NetworkConnection objects also act as observers for networked objects. When a connection is an observer of a networked object with a NetworkIdentity, then the object will be visible to corresponding client for the connection, and incremental state changes will be sent to the client.</para>
     /// <para>There are many virtual functions on NetworkConnection that allow its behaviour to be customized. NetworkClient and NetworkServer can both be made to instantiate custom classes derived from NetworkConnection by setting their networkConnectionClass member variable.</para>
     /// </remarks>
-    public class NetworkPlayer : INetworkPlayer
+    public class NetworkPlayer : INetworkPlayer, IVisibilityTracker, IObjectOwner, IPlayer
     {
         static readonly ILogger logger = LogFactory.GetLogger(typeof(NetworkPlayer));
 
@@ -39,7 +39,6 @@ namespace Mirage
         /// <para>Clients do not know their connectionId on the server, and do not know the connectionId of other clients on the server.</para>
         /// </remarks>
         private readonly Connection connection;
-        private readonly Peer peer;
 
         /// <summary>
         /// General purpose object to hold authentication data, character selection, tokens, etc.
@@ -72,11 +71,10 @@ namespace Mirage
         /// Creates a new NetworkConnection with the specified address and connectionId
         /// </summary>
         /// <param name="networkConnectionId"></param>
-        public NetworkPlayer(Peer peer, Connection connection)
+        public NetworkPlayer(Connection connection)
         {
             Assert.IsNotNull(connection);
             this.connection = connection;
-            this.peer = peer;
         }
 
         /// <summary>
@@ -84,8 +82,7 @@ namespace Mirage
         /// </summary>
         public virtual void Disconnect()
         {
-            throw new NotImplementedException();
-            //connection.Disconnect();
+            connection.DisconnectPlayer(this);
         }
 
         private static NetworkMessageDelegate MessageHandler<T>(Action<INetworkPlayer, T> handler)
@@ -295,6 +292,11 @@ namespace Mirage
 
             // clear the hashset because we destroyed them all
             clientOwnedObjects.Clear();
+        }
+
+        public void Disconnect()
+        {
+            connection.DisconnectPlayer(this);
         }
     }
 }

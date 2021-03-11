@@ -328,7 +328,6 @@ namespace Mirage
                 // connection cannot be null here or conn.connectionId
                 // would throw NRE
                 connections.Add(conn);
-                conn.RegisterHandler<NetworkPingMessage>(Time.OnServerPing);
             }
         }
 
@@ -369,10 +368,10 @@ namespace Mirage
         /// <typeparam name="T">Message type</typeparam>
         /// <param name="msg">Message</param>
         /// <param name="channelId">Transport channel to use</param>
-        public void SendToAll<T>(T msg, int channelId = Channel.Reliable)
+        public void SendToAll<T>(T msg, bool reliable)
         {
             if (logger.LogEnabled()) logger.Log("Server.SendToAll id:" + typeof(T));
-            NetworkPlayer.Send(connections, msg, channelId);
+            SendToMany(connections.Select(x => x.Connection), msg, reliable);
         }
 
         async UniTaskVoid ConnectionAcceptedAsync(INetworkPlayer conn)
@@ -435,7 +434,7 @@ namespace Mirage
             Authenticated?.Invoke(conn);
         }
 
-        public static void Send<T>(IEnumerable<Connection> connections, T msg, int channelId = Channel.Reliable)
+        public static void SendToMany<T>(IEnumerable<Connection> connections, T msg, bool reliable = true)
         {
             // todo remove channel
             using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
@@ -447,12 +446,16 @@ namespace Mirage
 
                 foreach (Connection conn in connections)
                 {
+                    if (reliable)
+                        conn.SendReliable(segment);
+                    else
+                        conn.SendUnreiable(segment);
                     // send to all connections, but don't wait for them
                     conn.SendUnreiable(segment);
                     count++;
                 }
 
-                NetworkDiagnostics.OnSend(msg, channelId, segment.Count, count);
+                NetworkDiagnostics.OnSend(msg, reliable, segment.Count, count);
             }
         }
     }
