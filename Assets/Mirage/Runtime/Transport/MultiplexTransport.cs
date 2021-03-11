@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 
 namespace Mirage
 {
+    [System.Obsolete("Use Miarge.SocketLayer instead")]
     public class MultiplexTransport : Transport
     {
 

@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 namespace Mirage
 {
-    [System.Obsolete("Use TransportV2, Peer, and ISocket instead")]
+    [System.Obsolete("Use Miarge.SocketLayer instead")]
     public abstract class Transport : MonoBehaviour
     {
         public class ConnectEvent : UnityEvent<IConnection> { }

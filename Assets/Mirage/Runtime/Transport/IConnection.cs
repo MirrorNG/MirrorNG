@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 namespace Mirage
 {
 
+    [System.Obsolete("Use Miarge.SocketLayer instead")]
     public static class Channel
     {
         // 2 well known channels
@@ -15,7 +16,7 @@ namespace Mirage
         public const int Unreliable = 1;
     }
 
-    [System.Obsolete("Use Peer and Connection instead")]
+    [System.Obsolete("Use Miarge.SocketLayer instead")]
     public interface IConnection
     {
         void Send(ArraySegment<byte> data, int channel = Channel.Reliable);

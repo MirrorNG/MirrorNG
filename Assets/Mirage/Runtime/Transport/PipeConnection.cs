@@ -11,6 +11,7 @@ namespace Mirage
     /// A connection that is directly connected to another connection
     /// If you send data in one of them,  you receive it on the other one
     /// </summary>
+    [System.Obsolete("Use Miarge.SocketLayer instead")]
     public class PipeConnection : IConnection
     {
 

@@ -122,7 +122,7 @@ namespace Mirage.SocketLayer
         public void DisconnectPlayer(IPlayer player)
         {
             players.Remove(player);
-            if (players.Count == null)
+            if (players.Count == 0)
             {
                 Disconnect();
             }
