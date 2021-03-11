@@ -3,7 +3,8 @@
     "references": [
         "UniTask",
         "UniTask.Linq",
-        "Mirage.SocketLayer"
+        "Mirage.SocketLayer",
+        "Mirage.Logger"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

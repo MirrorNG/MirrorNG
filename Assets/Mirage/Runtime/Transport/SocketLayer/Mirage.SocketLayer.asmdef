@@ -1,3 +1,15 @@
-﻿{
-	"name": "Mirage.SocketLayer"
+{
+    "name": "Mirage.SocketLayer",
+    "references": [
+        "GUID:2987b4d4e3451944dbbe002fba5fa566"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
