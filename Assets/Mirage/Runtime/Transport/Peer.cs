@@ -34,6 +34,10 @@ namespace Mirage.SocketLayer
             this.config = config;
         }
 
+
+        public void SendNotify() => throw new NotImplementedException();
+        public void SendUnreliable() => throw new NotImplementedException();
+
         private void Send(Connection connection, byte[] data, int? length = null)
         {
             socket.Send(connection.EndPoint, data, length);
