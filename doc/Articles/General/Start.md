@@ -15,10 +15,10 @@ See [Using the NetworkManager](../Components/NetworkManager.md).
 ## Player Prefab
 -   Find the Prefab for the player game object in the game, or create a Prefab from the player game object
 -   Add the NetworkIdentity component to the player Prefab
--   Set the `playerPrefab` field on the `PlayerSpawner` component  to the player Prefab. You can find this component on the GameObject you created in the first setup.
+-   Set the `playerPrefab` field on the `CharacterSpawner` component  to the player Prefab. You can find this component on the GameObject you created in the first setup.
 -   Remove the player game object instance from the Scene if it exists in the Scene
 
-See [Player Objects](../Guides/GameObjects/SpawnPlayer.md) for more information.
+See [character objects](../Guides/GameObjects/SpawnPlayer.md) for more information.
 
 ## Player movement
 -   Add a NetworkTransform component to the player Prefab
@@ -74,4 +74,4 @@ Fix non-player prefabs such as enemies:
 
 ## Spawn positions for players
 -   Add a new game object and place it at player’s start location
--   Add this GameObject to the `PlayerSpawner`'s `Positions` list.
+-   Add this GameObject to the `CharacterSpawner`'s `Positions` list.

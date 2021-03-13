@@ -6,12 +6,12 @@ using Object = UnityEngine.Object;
 namespace Mirage
 {
 
-    public class PlayerSpawnerTest
+    public class CharacterSpawnerTest
     {
         private GameObject go;
         private NetworkClient client;
         private NetworkServer server;
-        private PlayerSpawner spawner;
+        private CharacterSpawner spawner;
         private NetworkSceneManager sceneManager;
         private ServerObjectManager serverObjectManager;
         private ClientObjectManager clientObjectManager;
@@ -26,7 +26,7 @@ namespace Mirage
             go = new GameObject();
             client = go.AddComponent<NetworkClient>();
             server = go.AddComponent<NetworkServer>();
-            spawner = go.AddComponent<PlayerSpawner>();
+            spawner = go.AddComponent<CharacterSpawner>();
             sceneManager = go.AddComponent<NetworkSceneManager>();
             serverObjectManager = go.AddComponent<ServerObjectManager>();
             clientObjectManager = go.AddComponent<ClientObjectManager>();
@@ -101,7 +101,7 @@ namespace Mirage
         {
             spawner.Start();
 
-            spawner.playerSpawnMethod = PlayerSpawner.PlayerSpawnMethod.RoundRobin;
+            spawner.playerSpawnMethod = CharacterSpawner.PlayerSpawnMethod.RoundRobin;
             Assert.That(spawner.GetStartPosition(), Is.SameAs(pos1.transform));
             Assert.That(spawner.GetStartPosition(), Is.SameAs(pos2.transform));
             Assert.That(spawner.GetStartPosition(), Is.SameAs(pos1.transform));
@@ -113,7 +113,7 @@ namespace Mirage
         {
             spawner.Start();
 
-            spawner.playerSpawnMethod = PlayerSpawner.PlayerSpawnMethod.Random;
+            spawner.playerSpawnMethod = CharacterSpawner.PlayerSpawnMethod.Random;
             Assert.That(spawner.GetStartPosition(), Is.SameAs(pos1.transform) | Is.SameAs(pos2.transform));
         }
 

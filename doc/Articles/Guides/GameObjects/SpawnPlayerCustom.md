@@ -1,10 +1,10 @@
 # Custom Character Spawning
 
-Mirage comes with a PlayerSpawner which will automatically spawn a player object when a client connects.
+Mirage comes with a CharacterSpawner which will automatically spawn a character object when a client connects.
 
 Many games need character customization. You may want to pick the color of the hair, eyes, skin, height, race, etc.
 
-In this case,  you will need to create your own PlayerSpawner.  Follow these steps:
+In this case,  you will need to create your own CharacterSpawner.  Follow these steps:
 
 1) Create your player prefabs (as many as you need) and add them to the Spawnable Prefabs in your NetworkClient.
 2) Create a message that describes your player. For example:
@@ -27,7 +27,7 @@ public enum Race
 ```
 3) Create Player Spawner class and add it to some GameObject in your scene
 ``` cs
-public class PlayerSpawner : MonoBehaviour
+public class CharacterSpawner : MonoBehaviour
 {
     public NetworkSceneManager SceneManager;
     public NetworkClient Client;
@@ -68,11 +68,11 @@ private void OnServerAuthenticated(INetworkConnection connection)
 
 void OnCreateCharacter(INetworkConnection conn, CreateMMOCharacterMessage msg)
 {
-    // create your player object
+    // create your character object
     // use the data in msg to configure it
     GameObject playerObject = ...;
 
-    // spawn it as the player object
+    // spawn it as the character object
     server.AddPlayerForConnection(conn, playerObject);
 }
 ```
@@ -98,13 +98,13 @@ public class MyNetworkManager : MonoBehaviour
 
     public void ReplacePlayer(NetworkConnection conn, GameObject newPrefab)
     {
-        // Cache a reference to the current player object
+        // Cache a reference to the current character object
         GameObject oldPlayer = conn.identity.gameObject;
 
-        // Instantiate the new player object and broadcast to clients
+        // Instantiate the new character object and broadcast to clients
         kServer.ReplacePlayerForConnection(conn, Instantiate(newPrefab));
 
-        // Remove the previous player object that's now been replaced
+        // Remove the previous character object that's now been replaced
         Server.Destroy(oldPlayer);
     }
 }

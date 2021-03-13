@@ -25,7 +25,7 @@ This is a full list of virtual methods (callbacks) that you can implement on `Ne
     - called when behaviour has authority when it is spawned (eg local player)
     - called when behaviour is given authority by the sever
 - OnStartLocalPlayer
-    - called when the behaviour is on the local player object
+    - called when the behaviour is on the local character object
 
 - OnStopAuthority
     - called when authority is taken from the object (eg local player is replaced but not destroyed)

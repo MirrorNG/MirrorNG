@@ -1,23 +1,15 @@
 # SyncDictionary
+A <xref:Mirage.SyncDictionary`2> is an associative array containing an unordered list of key, value pairs. Keys and values can be any of [Mirage supported types](../DataTypes.md).
 
-A SyncDictionary is an associative array containing an unordered list of key, value pairs. Keys and values can be of the following types:
--   Basic type (byte, int, float, string, UInt64, etc)
--   Built-in Unity math type (Vector3, Quaternion, etc)
--   NetworkIdentity
--   Game object with a NetworkIdentity component attached.
--   Struct with any of the above
+SyncDictionary works much like [SyncLists](SyncLists.md): when you make a change on the server, the change is propagated to all clients and the appropriate callback is called.
 
-SyncDictionary works much like [SyncLists](SyncLists.md): when you make a change on the server the change is propagated to all clients and the Callback is called.
+## Usage
+Add a field of type `SyncDictionary<TKey, TValue>` on any <xref:Mirage.NetworkBehaviour> where `TKey` and `TValue` can be any supported Mirage type and initialize it.
 
+> [!IMPORTANT]
+> You need to initialize the SyncDictionary immediately after definition in order for them to work. You can mark them as `readonly` to enforce proper usage.
 
-To use it, create a class that derives from SyncDictionary for your specific type. This is necessary because the Weaver will add methods to that class. Then add a field to your NetworkBehaviour class.
-
-> Note that by the time you subscribe to the callback, the dictionary will already be initialized, so you will not get a call for the initial data, only updates.</p>
-
->Note SyncDictionaries must be initialized in the constructor, not in Startxxx().  You can make them readonly to ensure correct usage.
-
-## Simple Example
-
+### Basic example
 ```cs
 using UnityEngine;
 using Mirage;
@@ -30,50 +22,71 @@ public struct Item
     public int durability;
 }
 
-[System.Serializable]
-public class SyncDictionaryStringItem : SyncDictionary<string, Item> {}
-
-public class ExamplePlayer : NetworkBehaviour
+public class Player : NetworkBehaviour
 {
-    [SerializeField]
-    public readonly SyncDictionaryStringItem Equipment = new SyncDictionaryStringItem();
+    public readonly SyncDictionary<stirng, Item> Equipment = new SyncDictionary<string, Item>();
 
-    public override void OnStartServer()
+    void Awake() {
+        NetIdentity.OnStartServer.AddListener(OnStartServer);
+    }
+
+    void OnStartServer()
     {
         Equipment.Add("head", new Item { name = "Helmet", hitPoints = 10, durability = 20 });
         Equipment.Add("body", new Item { name = "Epic Armor", hitPoints = 50, durability = 50 });
         Equipment.Add("feet", new Item { name = "Sneakers", hitPoints = 3, durability = 40 });
         Equipment.Add("hands", new Item { name = "Sword", hitPoints = 30, durability = 15 });
     }
+}
+```
 
-    public override void OnStartClient()
+## Callbacks
+You can detect when a SyncDictionary changes on the client and/or server. This is especially useful for refreshing your UI, character appearance etc.
+
+There are different callbacks for different operations, such as `OnChange` (any change to the dictionary), `OnInsert` (adding new element) etc. Please check the [SyncDictionary API reference](xref:Mirage.SyncIDictionary`2) for the complete list of callbacks.
+
+Depending on where you want to invoke the callbacks, you can use these methods to register them:
+- `Awake` for both client and server
+- `NetIdentity.OnStartServer` event for server-only
+- `NetIdentity.OnStartClient` event for cleint-only
+
+> [!NOTE]
+> By the time you subscribe, the dictionary will already be initialized, so you will not get a call for the initial data, only updates.
+
+### Example
+```cs
+using Mirage;
+
+public class Player : NetworkBehaviour {
+    public readonly SyncDictionary<stirng, Item> Equipment = new SyncDictionary<string, Item>();
+    public readonly SyncDictionary<stirng, Item> Hotbar = new SyncDictionary<string, Item>();
+
+    // this will hook the callback on both server and client
+    void Awake()
     {
-        // Equipment is already populated with anything the server set up
-        // but we can subscribe to the callback in case it is updated later on
-        Equipment.Callback += OnEquipmentChange;
+        Equipment.OnChange += UpdateEquipment;
+        NetIdentity.OnStartClient.AddListener(OnStartClient);
     }
 
-    void OnEquipmentChange(SyncDictionaryStringItem.Operation op, string key, Item item)
+    // hotbar changes will only be invoked on clients
+    void OnStartClient() {
+        Hotbar.OnChange += UpdateHotbar;
+    }
+
+    void UpdateEquipment()
     {
-        // equipment changed,  perhaps update the gameobject
-        Debug.Log(op + " - " + key);
+        // here you can refresh your UI for instance
+    }
+
+    void UpdateHotbar()
+    {
+        // here you can refresh your UI for instance
     }
 }
 ```
 
-By default, SyncDictionary uses a Dictionary to store it's data. If you want to use a different `IDictionary `implementation such as `SortedList` or `SortedDictionary`, add a constructor to your SyncDictionary implementation and pass a dictionary to the base class. For example:
+By default, `SyncDictionary` uses a `Dictionary` to store its data. If you want to use a different dictionary implementation, add a constructor and pass the dictionary implementation to the parent constructor. For example:
 
 ```cs
-[System.Serializable]
-public class SyncDictionaryStringItem : SyncDictionary<string, Item> 
-{
-    public SyncDictionaryStringItem() : base (new SortedList<string,Item>()) {}
-}
-    
-public class ExamplePlayer : NetworkBehaviour
-{
-    [SerializeField]
-    public readonly SyncDictionaryStringItem Equipment = new SyncDictionaryStringItem();
-}
+public SyncDictionary<string, Item> myDict = new SyncIDictionary<string, Item>(new MyDictionary<string, Item>());
 ```
-

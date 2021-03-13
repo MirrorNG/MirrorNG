@@ -65,7 +65,7 @@ namespace Mirage.Tests
         {
             (IConnection conn1, IConnection _) = PipeConnection.CreatePipe();
 
-            var connection = new NetworkConnection(conn1)
+            var connection = new NetworkPlayer(conn1)
             {
                 Identity = player.GetComponent<NetworkIdentity>()
             };

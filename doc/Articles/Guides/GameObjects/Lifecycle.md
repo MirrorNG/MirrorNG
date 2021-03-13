@@ -83,7 +83,7 @@ Subscribe to this event by using `AddListener` or adding your method in the even
 
 # Start Local Player
 
-If the object spawned is the [player object](SpawnPlayer.md),  the event <xref:Mirage.NetworkIdentity.OnStartLocalPlayer>
+If the object spawned is the [character object](SpawnPlayer.md),  the event <xref:Mirage.NetworkIdentity.OnStartLocalPlayer>
 is invoked.
 Subscribe to this event by using `AddListener` or adding your method in the event in the inspector
 

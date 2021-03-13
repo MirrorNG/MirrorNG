@@ -31,7 +31,7 @@ These core components are included in Mirage:
 -   [Network Scene Checker](NetworkSceneChecker.md)  
     The Network Scene Checker component controls visibility of networked objects between scenes.
 -   [Network Start Position](NetworkStartPosition.md)  
-    Network Start Position is used by the Network Manager when creating player objects. The position and rotation of the Network Start Position are used to place the newly created player object.
+    Network Start Position is used by the Network Manager when creating character objects. The position and rotation of the Network Start Position are used to place the newly created character object.
 -   [Network Transform](NetworkTransform.md)  
     The Network Transform component synchronizes the movement and rotation of game objects across the network. Note that the network Transform component only synchronizes spawned networked game objects.
 -   [Network Transform Child](NetworkTransformChild.md)  

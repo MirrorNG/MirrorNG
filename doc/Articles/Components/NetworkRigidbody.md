@@ -10,7 +10,7 @@ Network Rigidbody works best when there is also a NetworkTransform for the objec
 
 ![Network Rigidbody inspector](NetworkRigidbody.png)
 
-By default, Network Rigidbody is server-authoritative unless you check the box for **Client Authority**. Client Authority applies to player objects as well as non-player objects that have been specifically assigned to a client, but only for this component. With this enabled, value changes are send from the client to the server.
+By default, Network Rigidbody is server-authoritative unless you check the box for **Client Authority**. Client Authority applies to character objects as well as non-character objects that have been specifically assigned to a client, but only for this component. With this enabled, value changes are send from the client to the server.
 
 The **Sensitivity** options allow you to set a minimum thresholds before values are send over network. This helps minimize network traffic for very small changes.
 

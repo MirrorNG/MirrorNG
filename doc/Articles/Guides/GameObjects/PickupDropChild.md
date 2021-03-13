@@ -2,7 +2,7 @@
 
 Frequently the question comes up about how to handle objects that are attached as children of the player prefab that all clients need to know about and synchronize, such as which weapon is equipped, picking up networked scene objects, and players dropping objects into the scene.
 
->   Mirage cannot support multiple Network Identity components within an object hierarchy. Since the Player object must have a Network Identity, none of its descendant objects can have one.
+>   Mirage cannot support multiple Network Identity components within an object hierarchy. Since the character object must have a Network Identity, none of its descendant objects can have one.
 
 ## Child Objects
 
@@ -237,7 +237,7 @@ This method is simply called from `OnMouseDown` in the Scene Object script:
     }
 ```
 
-Since the SceneObject(Clone) is networked, we can pass it directly through to `CmdPickupItem` on the player object to set the equipped item SyncVar and destroy the scene object.
+Since the SceneObject(Clone) is networked, we can pass it directly through to `CmdPickupItem` on the character object to set the equipped item SyncVar and destroy the scene object.
 
 For this entire example, the only prefab that needs to be registered with Network Manager besides the Player is the SceneObject prefab.
 

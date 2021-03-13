@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Mirage.Examples.Pong
 {
-    public class PaddleSpawner : PlayerSpawner
+    public class PaddleSpawner : CharacterSpawner
     {
         public Transform leftRacketSpawn;
         public Transform rightRacketSpawn;

@@ -63,8 +63,8 @@ namespace Mirage.Tests
         [Test]
         public void AddAllReadyServerConnectionsToObservers()
         {
-            var connection1 = new NetworkConnection(tconn42) { IsReady = true };
-            var connection2 = new NetworkConnection(tconn43) { IsReady = false };
+            var connection1 = new NetworkPlayer(tconn42) { IsReady = true };
+            var connection2 = new NetworkPlayer(tconn43) { IsReady = false };
             // add some server connections
             server.connections.Add(connection1);
             server.connections.Add(connection2);

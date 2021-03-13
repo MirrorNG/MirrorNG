@@ -8,7 +8,7 @@ The diagram below shows the directions that remote actions take:
 
 ## Server RPC Calls
 
-Server RPC Calls are sent from player objects on the client to player objects on the server. For security, Server RPC Calls can only be sent from YOUR player object by default, so you cannot control the objects of other players.  You can bypass the authority check using `[ServerRpc(requireAuthority = false)]`.
+Server RPC Calls are sent from character objects on the client to character objects on the server. For security, Server RPC Calls can only be sent from YOUR character object by default, so you cannot control the objects of other players.  You can bypass the authority check using `[ServerRpc(requireAuthority = false)]`.
 
 To make a function into a Server RPC Calls, add the [ServerRpc] custom attribute to it. This function will now be run on the server when it is called on the client. Any parameters of [allowed data type](../DataTypes.md) will be automatically passed to the server with the Server RPC Call.
 
@@ -78,7 +78,7 @@ public class Shop: NetworkBehavior {
 
 ### ServerRpc and Authority
 
-It is possible to invoke ServerRpcs on non-player objects if any of the following are true:
+It is possible to invoke ServerRpcs on non-character objects if any of the following are true:
 
 - The object was spawned with client authority
 - The object has client authority set with `NetworkIdentity.AssignClientAuthority`
@@ -86,7 +86,7 @@ It is possible to invoke ServerRpcs on non-player objects if any of the followin
     - You can include an optional `NetworkConnectionToClient sender = null` parameter in the Server RPC Call method signature and Mirage will fill in the sending client for you.
     - Do not try to set a value for this optional parameter...it will be ignored.
 
-Server RPC Calls sent from these object are run on the server instance of the object, not on the associated player object for the client.
+Server RPC Calls sent from these object are run on the server instance of the object, not on the associated character object for the client.
 
 ```cs
 public enum DoorState : byte
@@ -114,7 +114,7 @@ ClientRpc calls are sent from objects on the server to objects on clients. They 
 
 ClientRpc functions cannot be static.  They must return `void`
 
-ClientRpc messages are only sent to observers of an object according to its [Network Visibility](../Visibility.md). Player objects are always obeservers of themselves. In some cases, you may want to exclude the owner client when calling a ClientRpc.  This is done with the `excludeOwner` option: `[ClientRpc(excludeOwner = true)]`.
+ClientRpc messages are only sent to observers of an object according to its [Network Visibility](../Visibility.md). character objects are always obeservers of themselves. In some cases, you may want to exclude the owner client when calling a ClientRpc.  This is done with the `excludeOwner` option: `[ClientRpc(excludeOwner = true)]`.
 
 ``` cs
 public class Player : NetworkBehaviour

@@ -63,7 +63,7 @@ namespace Mirage
         /// <summary>
         /// The NetworkConnection object this client is using.
         /// </summary>
-        public NetworkPlayer Player { get; internal set; }
+        public INetworkPlayer Connection { get; internal set; }
 
         internal ConnectState connectState = ConnectState.Disconnected;
 
@@ -166,7 +166,7 @@ namespace Mirage
         /// <summary>
         /// Creates a new INetworkConnection based on the provided IConnection.
         /// </summary>
-        public virtual NetworkPlayer GetNewConnection(Connection connection)
+        public virtual INetworkPlayer GetNewConnection(IConnection connection)
         {
             return new NetworkPlayer(connection);
         }

@@ -19,7 +19,7 @@ Scene objects with a Network Scene Checker component are disabled when they're n
 
 In Mirage, the Server and connected Clients are always on the same main scene, however the server and clients can have various combinations of smaller subscenes loaded additively. The server may load all subscenes at start, or it may dynamically load and unload subscenes where players or other activity is going on as needed.
 
-All player objects are always first spawned in the main scene, which may or may not have visual content, networked objects, etc. With this component attached to all networked objects, whenever the player object is moved to a subscene (from the main or from another subscene), the observers lists for objects in both the new scene and the prior scene are updated accordingly.
+All character objects are always first spawned in the main scene, which may or may not have visual content, networked objects, etc. With this component attached to all networked objects, whenever the character object is moved to a subscene (from the main or from another subscene), the observers lists for objects in both the new scene and the prior scene are updated accordingly.
 
 Loading the subscene(s) on the server is through the normal process with `SceneManager`:
 
@@ -39,17 +39,17 @@ SceneMessage msg = new SceneMessage
 connectionToClient.Send(msg);
 ```
 
-Then, on the server only, you just move the player object to the subscene:
+Then, on the server only, you just move the character object to the subscene:
 
 ```cs
-// Position the player object in world space first
+// Position the character object in world space first
 // This assumes it has a NetworkTransform component that will update clients
 player.transform.position = new Vector3(100, 1, 100);
 
-// Then move the player object to the subscene
+// Then move the character object to the subscene
 SceneManager.MoveGameObjectToScene(player, subScene);
 ```
 
 Optionally you can send another `SceneMessage` to the client with `SceneOperation.UnloadAdditive` to remove any previous additive scene the client no longer needs.  This would apply to a game that has levels after a level change. A short delay may be necessary before removal to allow the client to get fully synced.
 
-Depending on the complexity of your game, you may find it helpful when switching a player between subscenes to move the player object to the main scene first, yield 100 ms, re-position it, and finally move it to the new subscene.
+Depending on the complexity of your game, you may find it helpful when switching a player between subscenes to move the character object to the main scene first, yield 100 ms, re-position it, and finally move it to the new subscene.

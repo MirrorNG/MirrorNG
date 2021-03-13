@@ -101,7 +101,7 @@ namespace Mirage.HeadlessBenchmark
         {
             if (!string.IsNullOrEmpty(GetArg("-server")))
             {
-                var serverGo = new GameObject($"Server", typeof(NetworkServer), typeof(ServerObjectManager), typeof(NetworkSceneManager), typeof(PlayerSpawner));
+                var serverGo = new GameObject($"Server", typeof(NetworkServer), typeof(ServerObjectManager), typeof(NetworkSceneManager), typeof(CharacterSpawner));
 
                 server = serverGo.GetComponent<NetworkServer>();
                 server.MaxConnections = 9999;
@@ -115,7 +115,7 @@ namespace Mirage.HeadlessBenchmark
                 serverObjectManager.NetworkSceneManager = networkSceneManager;
                 serverObjectManager.Start();
 
-                PlayerSpawner spawner = serverGo.GetComponent<PlayerSpawner>();
+                CharacterSpawner spawner = serverGo.GetComponent<CharacterSpawner>();
                 spawner.PlayerPrefab = PlayerPrefab.GetComponent<NetworkIdentity>();
                 spawner.ServerObjectManager = serverObjectManager;
                 spawner.Server = server;
@@ -162,10 +162,10 @@ namespace Mirage.HeadlessBenchmark
 
         async UniTask StartClient(int i, string networkAddress)
         {
-            var clientGo = new GameObject($"Client {i}", typeof(NetworkClient), typeof(ClientObjectManager), typeof(PlayerSpawner), typeof(NetworkSceneManager));
+            var clientGo = new GameObject($"Client {i}", typeof(NetworkClient), typeof(ClientObjectManager), typeof(CharacterSpawner), typeof(NetworkSceneManager));
             NetworkClient client = clientGo.GetComponent<NetworkClient>();
             ClientObjectManager objectManager = clientGo.GetComponent<ClientObjectManager>();
-            PlayerSpawner spawner = clientGo.GetComponent<PlayerSpawner>();
+            CharacterSpawner spawner = clientGo.GetComponent<CharacterSpawner>();
             NetworkSceneManager networkSceneManager = clientGo.GetComponent<NetworkSceneManager>();
             networkSceneManager.Client = client;
 

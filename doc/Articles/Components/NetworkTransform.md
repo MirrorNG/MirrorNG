@@ -6,7 +6,7 @@ A game object with a Network Transform component must also have a Network Identi
 
 ![The Network Transform component](NetworkTransform.png)
 
-By default, Network Transform is server-authoritative unless you check the box for **Client Authority**. Client Authority applies to player objects as well as non-player objects that have been specifically assigned to a client, but only for this component.  With this enabled, position changes are send from the client to the server.
+By default, Network Transform is server-authoritative unless you check the box for **Client Authority**. Client Authority applies to character objects as well as non-character objects that have been specifically assigned to a client, but only for this component.  With this enabled, position changes are send from the client to the server.
 
 Under **Sensitivity**, you can set the minimum thresholds of change to the transform values in order for network messages to be generated. This helps minimize network "noise" for minor twitch and jitter.
 

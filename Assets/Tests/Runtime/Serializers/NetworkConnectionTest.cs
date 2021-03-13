@@ -41,7 +41,7 @@ namespace Mirage.Tests
             mockTransportConnection.Send(
                 Arg.Do<ArraySegment<byte>>(ParsePacket), Channel.Unreliable);
 
-            connection = new NetworkConnection(mockTransportConnection);
+            connection = new NetworkPlayer(mockTransportConnection);
 
             serializedMessage = MessagePacker.Pack(new ReadyMessage());
             connection.RegisterHandler<ReadyMessage>(message => { });

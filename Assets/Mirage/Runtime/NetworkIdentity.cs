@@ -173,7 +173,7 @@ namespace Mirage
         /// <summary>
         /// The NetworkConnection associated with this NetworkIdentity. This is only valid for player objects on a local client.
         /// </summary>
-        public NetworkPlayer ConnectionToServer { get; internal set; }
+        public INetworkPlayer ConnectionToServer { get; internal set; }
 
         /// <summary>
         /// The NetworkClient associated with this NetworkIdentity.
@@ -185,7 +185,7 @@ namespace Mirage
         /// </summary>
         public ClientObjectManager ClientObjectManager;
 
-        NetworkPlayer _connectionToClient;
+        INetworkPlayer _connectionToClient;
 
         /// <summary>
         /// The NetworkConnection associated with this <see cref="NetworkIdentity">NetworkIdentity.</see> This is valid for player and other owned objects in the server.

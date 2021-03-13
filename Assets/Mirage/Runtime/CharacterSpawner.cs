@@ -9,9 +9,9 @@ namespace Mirage
     /// <summary>
     /// Spawns a player as soon as the connection is authenticated
     /// </summary>
-    public class PlayerSpawner : MonoBehaviour
+    public class CharacterSpawner : MonoBehaviour
     {
-        static readonly ILogger logger = LogFactory.GetLogger(typeof(PlayerSpawner));
+        static readonly ILogger logger = LogFactory.GetLogger(typeof(CharacterSpawner));
 
         [FormerlySerializedAs("client")]
         public NetworkClient Client;
@@ -36,7 +36,7 @@ namespace Mirage
         {
             if (PlayerPrefab == null)
             {
-                throw new InvalidOperationException("Assign a player in the PlayerSpawner");
+                throw new InvalidOperationException("Assign a player in the CharacterSpawner");
             }
             if (Client != null)
             {
@@ -105,7 +105,7 @@ namespace Mirage
 
         void OnServerAddPlayerInternal(INetworkPlayer conn, AddPlayerMessage msg)
         {
-            logger.Log("PlayerSpawner.OnServerAddPlayer");
+            logger.Log("CharacterSpawner.OnServerAddPlayer");
 
             if (conn.Identity != null)
             {
@@ -165,7 +165,7 @@ namespace Mirage
         public enum PlayerSpawnMethod { Random, RoundRobin }
 
         /// <summary>
-        /// The current method of spawning players used by the PlayerSpawner.
+        /// The current method of spawning players used by the CharacterSpawner.
         /// </summary>
         [Tooltip("Round Robin or Random order of Start Position selection")]
         public PlayerSpawnMethod playerSpawnMethod;

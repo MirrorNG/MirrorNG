@@ -6,17 +6,17 @@ using UnityEngine.TestTools;
 
 namespace Mirage.Tests.Host
 {
-    public class PlayerSpawnerTest : HostSetup<MockComponent>
+    public class CharacterSpawnerTest : HostSetup<MockComponent>
     {
         AssetBundle bundle;
         GameObject player;
-        PlayerSpawner spawner;
+        CharacterSpawner spawner;
 
         public override void ExtraSetup()
         {
             bundle = AssetBundle.LoadFromFile("Assets/Tests/Runtime/TestScene/testscene");
 
-            spawner = networkManagerGo.AddComponent<PlayerSpawner>();
+            spawner = networkManagerGo.AddComponent<CharacterSpawner>();
 
             spawner.Client = client;
             spawner.Server = server;

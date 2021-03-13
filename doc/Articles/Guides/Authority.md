@@ -18,9 +18,9 @@ Even if a client has authority over an object the server still controls SyncVar 
 
 ## How to give authority
 
-By default the server has Authority over all objects. The server can give authority to objects that a client needs to control, like the player object. 
+By default the server has Authority over all objects. The server can give authority to objects that a client needs to control, like the character object. 
 
-If you spawn a player object using `NetworkServer.AddPlayerForConnection` then it will automatically be given authority.
+If you spawn a character object using `NetworkServer.AddPlayerForConnection` then it will automatically be given authority.
 
 
 ### Using NetworkServer.Spawn
@@ -41,7 +41,7 @@ identity.AssignClientAuthority(conn);
 You may want to do this when a player picks up an item
 
 ```cs
-// Command on player object
+// Command on character object
 [ServerRpc]
 void PickupItem(NetworkIdentity item)
 {
@@ -57,7 +57,7 @@ You can use `identity.RemoveClientAuthority` to remove client authority from an 
 identity.RemoveClientAuthority();
 ```
 
-Authority can't be removed from the player object. Instead you will have to replace the player object using `NetworkServer.ReplacePlayerForConnection`.
+Authority can't be removed from the character object. Instead you will have to replace the character object using `NetworkServer.ReplacePlayerForConnection`.
 
 
 ## On Authority

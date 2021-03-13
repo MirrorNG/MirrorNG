@@ -28,7 +28,7 @@ You will also need to create a class that represents a connection by implementin
 
 The message layer is concerned about sending and receiving [messages](../Guides/Communications/NetworkMessages.md)
 
-If you wish to use this funtionality, you will need to have a <xref:Mirage.NetworkClient> in the client and a <xref:Mirage.NetworkServer> for the server. These classes provide events you can subscribe to for the life cycle of connections.  A connection is an implementation of <xref:Mirage.INetworkConnection>, and can send and receive messages. 
+If you wish to use this funtionality, you will need to have a <xref:Mirage.NetworkClient> in the client and a <xref:Mirage.NetworkServer> for the server. These classes provide events you can subscribe to for the life cycle of connections.  A connection is an implementation of <xref:Mirage.INetworkPlayer>, and can send and receive messages. 
 
 ## Object Layer
 

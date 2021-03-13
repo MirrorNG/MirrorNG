@@ -20,12 +20,19 @@ namespace Mirage
         private const float Minimum = -1.0f / 1.414214f; // note: 1.0f / sqrt(2)
         private const float Maximum = +1.0f / 1.414214f;
 
+        private const int BitsPerAxis = 10;
+        private const int LargestComponentShift = BitsPerAxis * 3;
+        private const int AShift = BitsPerAxis * 2;
+        private const int BShift = BitsPerAxis * 1;
+        private const int ComponentScale = (1 << BitsPerAxis) - 1;
+        private const float ReverseScale = 1f / ComponentScale;
+
         internal static uint Compress(Quaternion quaternion)
         {
-            float absX = Mathf.Abs(quaternion.x),
-                      absY = Mathf.Abs(quaternion.y),
-                      absZ = Mathf.Abs(quaternion.z),
-                      absW = Mathf.Abs(quaternion.w);
+            float absX = Mathf.Abs(quaternion.x);
+            float absY = Mathf.Abs(quaternion.y);
+            float absZ = Mathf.Abs(quaternion.z);
+            float absW = Mathf.Abs(quaternion.w);
 
             ComponentType largestComponent = ComponentType.X;
             float largestAbs = absX;
@@ -83,27 +90,34 @@ namespace Mirage
                 c = -c;
             }
 
-            float normalizedA = (a - Minimum) / (Maximum - Minimum),
-                normalizedB = (b - Minimum) / (Maximum - Minimum),
-                normalizedC = (c - Minimum) / (Maximum - Minimum);
+            uint integerA = ScaleToUint(a);
+            uint integerB = ScaleToUint(b);
+            uint integerC = ScaleToUint(c);
 
-            uint integerA = (uint)Mathf.RoundToInt(normalizedA * 1024.0f),
-                integerB = (uint)Mathf.RoundToInt(normalizedB * 1024.0f),
-                integerC = (uint)Mathf.RoundToInt(normalizedC * 1024.0f);
+            return (((uint)largestComponent) << LargestComponentShift) | (integerA << AShift) | (integerB << BShift) | integerC;
+        }
 
-            return (((uint)largestComponent) << 30) | (integerA << 20) | (integerB << 10) | integerC;
+        private static uint ScaleToUint(float v)
+        {
+            float normalized = (v - Minimum) / (Maximum - Minimum);
+            return (uint)Mathf.RoundToInt(normalized * ComponentScale);
+        }
+
+        private static float ScaleToFloat(uint v)
+        {
+            return v * ReverseScale * (Maximum - Minimum) + Minimum;
         }
 
         internal static Quaternion Decompress(uint compressed)
         {
-            var largestComponentType = (ComponentType)(compressed >> 30);
-            uint integerA = (compressed >> 20) & ((1 << 10) - 1),
-                integerB = (compressed >> 10) & ((1 << 10) - 1),
-                integerC = compressed & ((1 << 10) - 1);
+            var largestComponentType = (ComponentType)(compressed >> LargestComponentShift);
+            uint integerA = (compressed >> AShift) & ComponentScale;
+            uint integerB = (compressed >> BShift) & ComponentScale;
+            uint integerC = compressed & ComponentScale;
 
-            float a = integerA / 1024.0f * (Maximum - Minimum) + Minimum,
-                b = integerB / 1024.0f * (Maximum - Minimum) + Minimum,
-                c = integerC / 1024.0f * (Maximum - Minimum) + Minimum;
+            float a = ScaleToFloat(integerA);
+            float b = ScaleToFloat(integerB);
+            float c = ScaleToFloat(integerC);
 
             Quaternion rotation;
             switch (largestComponentType)

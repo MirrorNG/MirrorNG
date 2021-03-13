@@ -8,7 +8,7 @@ The Network Room Manager is a specialized type of [Network Manager](NetworkManag
 -   Option to prevent players from joining a game in progress
 -   Customizable ways for players to choose options while in room  
 
-There are two types of player objects with the Network Room Manager:
+There are two types of character objects with the Network Room Manager:
 
 **Room Player Prefab**
 -   One for each player
