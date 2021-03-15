@@ -14,41 +14,6 @@ namespace Mirage
     {
         #region test components
 
-        class CheckObserverExceptionNetworkBehaviour : NetworkVisibility
-        {
-            public int called;
-            public INetworkPlayer valuePassed;
-            public override void OnRebuildObservers(HashSet<INetworkPlayer> observers, bool initialize) { }
-            public override bool OnCheckObserver(INetworkPlayer player)
-            {
-                ++called;
-                valuePassed = player;
-                throw new Exception("some exception");
-            }
-        }
-
-        class CheckObserverTrueNetworkBehaviour : NetworkVisibility
-        {
-            public int called;
-            public override void OnRebuildObservers(HashSet<INetworkPlayer> observers, bool initialize) { }
-            public override bool OnCheckObserver(INetworkPlayer player)
-            {
-                ++called;
-                return true;
-            }
-        }
-
-        class CheckObserverFalseNetworkBehaviour : NetworkVisibility
-        {
-            public int called;
-            public override void OnRebuildObservers(HashSet<INetworkPlayer> observers, bool initialize) { }
-            public override bool OnCheckObserver(INetworkPlayer player)
-            {
-                ++called;
-                return false;
-            }
-        }
-
         class SerializeTest1NetworkBehaviour : NetworkBehaviour
         {
             public int value;
@@ -103,22 +68,6 @@ namespace Mirage
             {
                 value = reader.ReadInt32();
             }
-        }
-
-        class RebuildObserversNetworkBehaviour : NetworkVisibility
-        {
-            public INetworkPlayer observer;
-            public override bool OnCheckObserver(INetworkPlayer player) { return true; }
-            public override void OnRebuildObservers(HashSet<INetworkPlayer> observers, bool initialize)
-            {
-                observers.Add(observer);
-            }
-        }
-
-        class RebuildEmptyObserversNetworkBehaviour : NetworkVisibility
-        {
-            public override bool OnCheckObserver(INetworkPlayer player) { return true; }
-            public override void OnRebuildObservers(HashSet<INetworkPlayer> observers, bool initialize) { }
         }
 
         #endregion
@@ -260,26 +209,6 @@ namespace Mirage
             });
 
             Assert.That(identity.ConnectionToClient, Is.EqualTo(original));
-        }
-
-        [Test]
-        public void RemoveObserverInternal()
-        {
-            // call OnStartServer so that observers dict is created
-            identity.StartServer();
-
-            // add an observer connection
-            INetworkPlayer player = Substitute.For<INetworkPlayer>();
-            identity.observers.Add(player);
-
-            INetworkPlayer player2 = Substitute.For<INetworkPlayer>();
-            // RemoveObserverInternal with invalid connection should do nothing
-            identity.RemoveObserverInternal(player2);
-            Assert.That(identity.observers, Is.EquivalentTo(new[] { player }));
-
-            // RemoveObserverInternal with existing connection should remove it
-            identity.RemoveObserverInternal(player);
-            Assert.That(identity.observers, Is.Empty);
         }
 
         [Test]
@@ -467,48 +396,6 @@ namespace Mirage
         }
 
         [Test]
-        public void OnCheckObserverCatchesException()
-        {
-            // add component
-            gameObject.AddComponent<CheckObserverExceptionNetworkBehaviour>();
-
-            var connection = new NetworkPlayer(tconn42);
-
-            // should catch the exception internally and not throw it
-            Assert.Throws<Exception>(() =>
-            {
-                identity.OnCheckObserver(connection);
-            });
-        }
-
-        [Test]
-        public void OnCheckObserverTrue()
-        {
-            // create a networkidentity with a component that returns true
-            // result should still be true.
-            var gameObjectTrue = new GameObject();
-            NetworkIdentity identityTrue = gameObjectTrue.AddComponent<NetworkIdentity>();
-            CheckObserverTrueNetworkBehaviour compTrue = gameObjectTrue.AddComponent<CheckObserverTrueNetworkBehaviour>();
-            var connection = new NetworkPlayer(tconn42);
-            Assert.That(identityTrue.OnCheckObserver(connection), Is.True);
-            Assert.That(compTrue.called, Is.EqualTo(1));
-        }
-
-        [Test]
-        public void OnCheckObserverFalse()
-        {
-            // create a networkidentity with a component that returns true and
-            // one component that returns false.
-            // result should still be false if any one returns false.
-            var gameObjectFalse = new GameObject();
-            NetworkIdentity identityFalse = gameObjectFalse.AddComponent<NetworkIdentity>();
-            CheckObserverFalseNetworkBehaviour compFalse = gameObjectFalse.AddComponent<CheckObserverFalseNetworkBehaviour>();
-            var connection = new NetworkPlayer(tconn42);
-            Assert.That(identityFalse.OnCheckObserver(connection), Is.False);
-            Assert.That(compFalse.called, Is.EqualTo(1));
-        }
-
-        [Test]
         public void OnSerializeAllSafely()
         {
             // create a networkidentity with our test components
@@ -662,50 +549,12 @@ namespace Mirage
         }
 
         [Test]
-        public void AddObserver()
-        {
-            identity.Server = server;
-            // create some connections
-            var connection1 = new NetworkPlayer(tconn42);
-            var connection2 = new NetworkPlayer(tconn43);
-
-            // call OnStartServer so that observers dict is created
-            identity.StartServer();
-
-            // call AddObservers
-            identity.AddObserver(connection1);
-            identity.AddObserver(connection2);
-            Assert.That(identity.observers, Is.EquivalentTo(new[] { connection1, connection2 }));
-
-            // adding a duplicate connectionId shouldn't overwrite the original
-            identity.AddObserver(connection1);
-            Assert.That(identity.observers, Is.EquivalentTo(new[] { connection1, connection2 }));
-        }
-
-        [Test]
-        public void ClearObservers()
-        {
-            // call OnStartServer so that observers dict is created
-            identity.StartServer();
-
-            // add some observers
-            identity.observers.Add(new NetworkPlayer(tconn42));
-            identity.observers.Add(new NetworkPlayer(tconn43));
-
-            // call ClearObservers
-            identity.ClearObservers();
-            Assert.That(identity.observers.Count, Is.EqualTo(0));
-        }
-
-
-        [Test]
         public void Reset()
         {
             // creates .observers and generates a netId
             identity.StartServer();
             identity.ConnectionToClient = new NetworkPlayer(tconn42);
             identity.ConnectionToServer = new NetworkPlayer(tconn43);
-            identity.observers.Add(new NetworkPlayer(tconn42));
 
             // mark for reset and reset
             identity.Reset();
@@ -713,112 +562,5 @@ namespace Mirage
             Assert.That(identity.ConnectionToClient, Is.Null);
             Assert.That(identity.ConnectionToServer, Is.Null);
         }
-
-        [Test]
-        public void GetNewObservers()
-        {
-            // add components
-            RebuildObserversNetworkBehaviour comp = gameObject.AddComponent<RebuildObserversNetworkBehaviour>();
-            comp.observer = new NetworkPlayer(tconn42);
-
-            // get new observers
-            var observers = new HashSet<INetworkPlayer>();
-            bool result = identity.GetNewObservers(observers, true);
-            Assert.That(result, Is.True);
-            Assert.That(observers.Count, Is.EqualTo(1));
-            Assert.That(observers.Contains(comp.observer), Is.True);
-        }
-
-        [Test]
-        public void GetNewObserversClearsHashSet()
-        {
-            // get new observers. no observer components so it should just clear
-            // it and not do anything else
-            var observers = new HashSet<INetworkPlayer>
-            {
-                new NetworkPlayer(tconn42)
-            };
-            identity.GetNewObservers(observers, true);
-            Assert.That(observers.Count, Is.EqualTo(0));
-        }
-
-        [Test]
-        public void GetNewObserversFalseIfNoComponents()
-        {
-            // get new observers. no observer components so it should be false
-            var observers = new HashSet<INetworkPlayer>();
-            bool result = identity.GetNewObservers(observers, true);
-            Assert.That(result, Is.False);
-        }
-
-        // RebuildObservers should always add the own ready connection
-        // (if any). fixes https://github.com/vis2k/Mirror/issues/692
-        [Test]
-        public void RebuildObserversOnlyAddsOwnPlayerIfReady()
-        {
-            // add at least one observers component, otherwise it will just add
-            // all server connections
-            gameObject.AddComponent<RebuildEmptyObserversNetworkBehaviour>();
-
-            // add own player connection that isn't ready
-            (_, NetworkPlayer connection) = PipedConnections();
-            identity.ConnectionToClient = connection;
-
-            // call OnStartServer so that observers dict is created
-            identity.StartServer();
-
-            // rebuild shouldn't add own player because conn wasn't set ready
-            identity.RebuildObservers(true);
-            Assert.That(identity.observers, Does.Not.Contains(identity.ConnectionToClient));
-        }
-
-        [Test]
-        public void RebuildObserversAddsReadyConnectionsIfImplemented()
-        {
-
-            // add a proximity checker
-            // one with a ready connection, one with no ready connection, one with null connection
-            RebuildObserversNetworkBehaviour comp = gameObject.AddComponent<RebuildObserversNetworkBehaviour>();
-            comp.observer = Substitute.For<INetworkPlayer>();
-            comp.observer.IsReady.Returns(true);
-
-            // rebuild observers should add all component's ready observers
-            identity.RebuildObservers(true);
-            Assert.That(identity.observers, Is.EquivalentTo(new[] { comp.observer }));
-        }
-
-
-        [Test]
-        public void RebuildObserversDoesntAddNotReadyConnectionsIfImplemented()
-        {
-            // add a proximity checker
-            // one with a ready connection, one with no ready connection, one with null connection
-            RebuildObserversNetworkBehaviour comp = gameObject.AddComponent<RebuildObserversNetworkBehaviour>();
-            comp.observer = Substitute.For<INetworkPlayer>();
-            comp.observer.IsReady.Returns(false);
-
-            // rebuild observers should add all component's ready observers
-            identity.RebuildObservers(true);
-            Assert.That(identity.observers, Is.Empty);
-        }
-
-        [Test]
-        public void RebuildObserversAddsReadyServerConnectionsIfNotImplemented()
-        {
-            INetworkPlayer readyConnection = Substitute.For<INetworkPlayer>();
-            readyConnection.IsReady.Returns(true);
-            INetworkPlayer notReadyConnection = Substitute.For<INetworkPlayer>();
-            notReadyConnection.IsReady.Returns(false);
-
-            // add some server connections
-            server.Players.Add(readyConnection);
-            server.Players.Add(notReadyConnection);
-
-            // rebuild observers should add all ready server connections
-            // because no component implements OnRebuildObservers
-            identity.RebuildObservers(true);
-            Assert.That(identity.observers, Is.EquivalentTo(new[] { readyConnection }));
-        }
-
     }
 }

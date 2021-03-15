@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using System.Linq;
 
 namespace Mirage
 {
@@ -172,7 +173,9 @@ namespace Mirage
 
         float DrawObservers(NetworkIdentity identity, float initialX, float Y)
         {
-            if (identity.observers.Count > 0)
+            IEnumerable<INetworkPlayer> observers = identity.Observers;
+
+            if (observers.Any())
             {
                 var observerRect = new Rect(initialX, Y + 10, 200, 20);
 
@@ -181,7 +184,7 @@ namespace Mirage
                 observerRect.x += 20;
                 observerRect.y += observerRect.height;
 
-                foreach (INetworkPlayer player in identity.observers)
+                foreach (INetworkPlayer player in observers)
                 {
                     GUI.Label(observerRect, player.Connection.GetEndPointAddress() + ":" + player, styles.ComponentName);
                     observerRect.y += observerRect.height;

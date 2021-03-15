@@ -32,9 +32,6 @@ namespace Mirage
         // Handles network messages on client and server
         internal delegate void NetworkMessageDelegate(INetworkPlayer player, NetworkReader reader, int channelId);
 
-        // internal so it can be tested
-        private readonly HashSet<NetworkIdentity> visList = new HashSet<NetworkIdentity>();
-
         // message handlers for this connection
         internal readonly Dictionary<int, NetworkMessageDelegate> messageHandlers = new Dictionary<int, NetworkMessageDelegate>();
 
@@ -205,25 +202,6 @@ namespace Mirage
         public override string ToString()
         {
             return $"connection({Address})";
-        }
-
-        public void AddToVisList(NetworkIdentity identity)
-        {
-            visList.Add(identity);
-        }
-
-        public void RemoveFromVisList(NetworkIdentity identity)
-        {
-            visList.Remove(identity);
-        }
-
-        public void RemoveObservers()
-        {
-            foreach (NetworkIdentity identity in visList)
-            {
-                identity.RemoveObserverInternal(this);
-            }
-            visList.Clear();
         }
 
         internal void InvokeHandler(int msgType, NetworkReader reader, int channelId)

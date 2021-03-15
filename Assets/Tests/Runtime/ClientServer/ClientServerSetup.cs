@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Mirage.InterestManagement;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -18,6 +19,7 @@ namespace Mirage.Tests.ClientServer
         protected NetworkServer server;
         protected NetworkSceneManager serverSceneManager;
         protected ServerObjectManager serverObjectManager;
+        protected InterestManager interestManager;
         protected GameObject serverPlayerGO;
         protected NetworkIdentity serverIdentity;
         protected T serverComponent;
@@ -41,7 +43,7 @@ namespace Mirage.Tests.ClientServer
         [UnitySetUp]
         public IEnumerator Setup() => UniTask.ToCoroutine(async () =>
         {
-            serverGo = new GameObject("server", typeof(NetworkSceneManager), typeof(ServerObjectManager), typeof(NetworkServer));
+            serverGo = new GameObject("server", typeof(NetworkSceneManager), typeof(ServerObjectManager), typeof(NetworkServer), typeof(GlobalInterestManager));
             clientGo = new GameObject("client", typeof(NetworkSceneManager), typeof(ClientObjectManager), typeof(NetworkClient));
             testTransport = serverGo.AddComponent<LoopbackTransport>();
 
@@ -69,6 +71,9 @@ namespace Mirage.Tests.ClientServer
             clientObjectManager.Client = client;
             clientObjectManager.NetworkSceneManager = clientSceneManager;
             clientObjectManager.Start();
+
+            interestManager = serverGo.GetComponent<InterestManager>();
+            interestManager.Start();
 
             ExtraSetup();
 

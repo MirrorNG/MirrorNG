@@ -186,6 +186,7 @@ MonoBehaviour:
   ClientObjectManager: {fileID: 249891961}
   ServerObjectManager: {fileID: 249891962}
   PlayerPrefab: {fileID: 1088833923132447018, guid: 22f1fa3a0aff72b46a371f667bb4fb30, type: 3}
+  AutoSpawn: 1
   startPositionIndex: 0
   startPositions: []
   playerSpawnMethod: 1
@@ -232,17 +233,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abe6be14204d94224a3e7cd99dd2ea73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  authenticator: {fileID: 0}
-  Connected:
-    m_PersistentCalls:
-      m_Calls: []
-  Authenticated:
-    m_PersistentCalls:
-      m_Calls: []
-  Disconnected:
-    m_PersistentCalls:
-      m_Calls: []
   Transport: {fileID: 249891954}
+  authenticator: {fileID: 0}
+  _connected:
+    m_PersistentCalls:
+      m_Calls: []
+  _authenticated:
+    m_PersistentCalls:
+      m_Calls: []
+  _disconnected:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &249891959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -256,30 +257,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxConnections: 4
-  Started:
-    m_PersistentCalls:
-      m_Calls: []
-  Connected:
-    m_PersistentCalls:
-      m_Calls: []
-  Authenticated:
-    m_PersistentCalls:
-      m_Calls: []
-  Disconnected:
-    m_PersistentCalls:
-      m_Calls: []
-  Stopped:
-    m_PersistentCalls:
-      m_Calls: []
-  OnStartHost:
-    m_PersistentCalls:
-      m_Calls: []
-  OnStopHost:
-    m_PersistentCalls:
-      m_Calls: []
-  authenticator: {fileID: 0}
   Listening: 1
   Transport: {fileID: 249891954}
+  authenticator: {fileID: 0}
+  _started:
+    m_PersistentCalls:
+      m_Calls: []
+  _connected:
+    m_PersistentCalls:
+      m_Calls: []
+  _authenticated:
+    m_PersistentCalls:
+      m_Calls: []
+  _disconnected:
+    m_PersistentCalls:
+      m_Calls: []
+  _stopped:
+    m_PersistentCalls:
+      m_Calls: []
+  _onStartHost:
+    m_PersistentCalls:
+      m_Calls: []
+  _onStopHost:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &249891960
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -294,16 +295,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Client: {fileID: 249891958}
   Server: {fileID: 249891959}
-  ClientChangeScene:
+  DontDestroy: 1
+  _clientChangeScene:
     m_PersistentCalls:
       m_Calls: []
-  ClientSceneChanged:
+  _clientSceneChanged:
     m_PersistentCalls:
       m_Calls: []
-  ServerChangeScene:
+  _serverChangeScene:
     m_PersistentCalls:
       m_Calls: []
-  ServerSceneChanged:
+  _serverSceneChanged:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &249891961
@@ -320,10 +322,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Client: {fileID: 249891958}
   NetworkSceneManager: {fileID: 249891960}
-  Spawned:
+  _spawned:
     m_PersistentCalls:
       m_Calls: []
-  UnSpawned:
+  _unSpawned:
     m_PersistentCalls:
       m_Calls: []
   spawnPrefabs:
@@ -342,12 +344,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Server: {fileID: 249891959}
   NetworkSceneManager: {fileID: 249891960}
-  Spawned:
+  _spawned:
     m_PersistentCalls:
       m_Calls: []
-  UnSpawned:
+  _unSpawned:
     m_PersistentCalls:
       m_Calls: []
+  InterestManager: {fileID: 0}
 --- !u!114 &249891963
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -361,25 +364,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Levels:
-  - Name: NetworkIdentity
-    level: 2
-  - Name: ClientObjectManager
-    level: 2
-  - Name: ServerObjectManager
-    level: 2
   - Name: NetworkClient
     level: 2
   - Name: NetworkTime
     level: 2
-  - Name: NetworkServer
-    level: 2
   - Name: NetworkSceneManager
     level: 2
+  - Name: NetworkIdentity
+    level: 2
+  - Name: ClientObjectManager
+    level: 2
+  - Name: NetworkServer
+    level: 2
   - Name: NetworkBehaviour
+    level: 2
+  - Name: CharacterSpawner
+    level: 2
+  - Name: ServerObjectManager
     level: 2
   - Name: PlayerSpawner
     level: 2
   - Name: RemoteCallHelper
+    level: 2
+  - Name: NetworkBehaviourInspector
     level: 2
   - Name: EnterPlayModeSettingsCheck
     level: 2
@@ -413,8 +420,6 @@ MonoBehaviour:
     level: 2
   - Name: WeaverTests
     level: 4
-  - Name: NetworkBehaviourInspector
-    level: 2
   - Name: ChatWindow
     level: 2
   - Name: AdditiveNetworkManager
@@ -431,6 +436,10 @@ MonoBehaviour:
     level: 2
   - Name: Tests
     level: 4
+  - Name: WelcomeWindow
+    level: 2
+  - Name: NetworkPlayer
+    level: 2
 --- !u!1 &283483315
 GameObject:
   m_ObjectHideFlags: 0

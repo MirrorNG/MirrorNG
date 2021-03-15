@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Mirage.InterestManagement;
 using NSubstitute;
 using NUnit.Framework;
 using UnityEngine;
@@ -20,6 +21,7 @@ namespace Mirage.Tests.ClientServer
         public void SpawnObjectExposeExceptionTest()
         {
             var gameObject = new GameObject();
+            gameObject.AddComponent<NetworkServer>();
             ServerObjectManager comp = gameObject.AddComponent<ServerObjectManager>();
 
             var obj = new GameObject();

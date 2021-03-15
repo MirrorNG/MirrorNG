@@ -235,29 +235,16 @@ namespace Mirage.Tests.Host
 
     public class NetworkIdentityStartedTests : HostSetup<MockComponent>
     {
-        #region SetUp
-
-        GameObject gameObject;
-        NetworkIdentity testIdentity;
-
-        public override void ExtraSetup()
-        {
-            gameObject = new GameObject();
-            testIdentity = gameObject.AddComponent<NetworkIdentity>();
-            server.Started.AddListener(() => serverObjectManager.Spawn(gameObject));
-        }
-
-        public override void ExtraTearDown()
-        {
-            Object.Destroy(gameObject);
-        }
-
-        #endregion
-
         [UnityTest]
         public IEnumerator ClientNotNullAfterSpawnInStarted() => UniTask.ToCoroutine(async () =>
         {
+            var gameObject = new GameObject();
+            NetworkIdentity testIdentity = gameObject.AddComponent<NetworkIdentity>();
+            serverObjectManager.Spawn(gameObject);
+
             await AsyncUtil.WaitUntilWithTimeout(() => testIdentity.Client == client);
+
+            Object.Destroy(gameObject);
         });
     }
 }

@@ -72,17 +72,6 @@ namespace Mirage
     }
 
     /// <summary>
-    /// An object that can observe NetworkIdentities.
-    /// this is useful for interest management
-    /// </summary>
-    public interface IVisibilityTracker
-    {
-        void AddToVisList(NetworkIdentity identity);
-        void RemoveFromVisList(NetworkIdentity identity);
-        void RemoveObservers();
-    }
-
-    /// <summary>
     /// An object that can own networked objects
     /// </summary>
     public interface IObjectOwner
@@ -97,7 +86,7 @@ namespace Mirage
     /// A connection to a remote endpoint.
     /// May be from the server to client or from client to server
     /// </summary>
-    public interface INetworkPlayer : IMessageHandler, IVisibilityTracker, IObjectOwner, IAuthenticatedObject, ISceneLoader
+    public interface INetworkPlayer : IMessageHandler, IObjectOwner, IAuthenticatedObject, ISceneLoader
     {
         IConnection Connection { get; }
     }
