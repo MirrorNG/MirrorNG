@@ -3,38 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.Assertions;
 using Mirage.Logging;
 using Mirage.Serialization;
+using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Mirage
 {
-    [NetworkMessage]
-    public struct NotifyAck
-    {
-    }
 
-    /// <summary>
-    /// A High level network connection. This is used for connections from client-to-server and for connection from server-to-client.
-    /// </summary>
-    /// <remarks>
-    /// <para>A NetworkConnection corresponds to a specific connection for a host in the transport layer. It has a connectionId that is assigned by the transport layer and passed to the Initialize function.</para>
-    /// <para>A NetworkClient has one NetworkConnection. A NetworkServerSimple manages multiple NetworkConnections. The NetworkServer has multiple "remote" connections and a "local" connection for the local client.</para>
-    /// <para>The NetworkConnection class provides message sending and handling facilities. For sending data over a network, there are methods to send message objects, byte arrays, and NetworkWriter objects. To handle data arriving from the network, handler functions can be registered for message Ids, byte arrays can be processed by HandleBytes(), and NetworkReader object can be processed by HandleReader().</para>
-    /// <para>NetworkConnection objects also act as observers for networked objects. When a connection is an observer of a networked object with a NetworkIdentity, then the object will be visible to corresponding client for the connection, and incremental state changes will be sent to the client.</para>
-    /// <para>There are many virtual functions on NetworkConnection that allow its behaviour to be customized. NetworkClient and NetworkServer can both be made to instantiate custom classes derived from NetworkConnection by setting their networkConnectionClass member variable.</para>
-    /// </remarks>
-    public class NetworkPlayer : INetworkPlayer
+    public class MessageBroker : IMessageSender, IMessageReceiver, INotifySender, INotifyReceiver
     {
-        static readonly ILogger logger = LogFactory.GetLogger(typeof(NetworkPlayer));
+        static readonly ILogger logger = LogFactory.GetLogger(typeof(MessageBroker));
 
         // Handles network messages on client and server
         internal delegate void NetworkMessageDelegate(INetworkPlayer player, NetworkReader reader, int channelId);
-
-        // internal so it can be tested
-        private readonly HashSet<NetworkIdentity> visList = new HashSet<NetworkIdentity>();
-
         // message handlers for this connection
         internal readonly Dictionary<int, NetworkMessageDelegate> messageHandlers = new Dictionary<int, NetworkMessageDelegate>();
 
@@ -46,88 +28,19 @@ namespace Mirage
         /// <para>Transport layers connections begin at one. So on a client with a single connection to a server, the connectionId of that connection will be one. In NetworkServer, the connectionId of the local connection is zero.</para>
         /// <para>Clients do not know their connectionId on the server, and do not know the connectionId of other clients on the server.</para>
         /// </remarks>
-        private readonly IConnection connection;
+        public IConnection Connection { get; }
 
-        /// <summary>
-        /// General purpose object to hold authentication data, character selection, tokens, etc.
-        /// associated with the connection for reference after Authentication completes.
-        /// </summary>
-        public object AuthenticationData { get; set; }
-
-        /// <summary>
-        /// Flag that tells if the connection has been marked as "ready" by a client calling ClientScene.Ready().
-        /// <para>This property is read-only. It is set by the system on the client when ClientScene.Ready() is called, and set by the system on the server when a ready message is received from a client.</para>
-        /// <para>A client that is ready is sent spawned objects by the server and updates to the state of spawned objects. A client that is not ready is not sent spawned objects.</para>
-        /// </summary>
-        public bool IsReady { get; set; }
-
-        /// <summary>
-        /// The IP address / URL / FQDN associated with the connection.
-        /// Can be useful for a game master to do IP Bans etc.
-        /// </summary>
-        public virtual EndPoint Address => connection.GetEndPointAddress();
-
-        public IConnection Connection => connection;
-
-        /// <summary>
-        /// The NetworkIdentity for this connection.
-        /// </summary>
-        public NetworkIdentity Identity { get; set; }
-
-        /// <summary>
-        /// A list of the NetworkIdentity objects owned by this connection. This list is read-only.
-        /// <para>This includes the player object for the connection - if it has localPlayerAutority set, and any objects spawned with local authority or set with AssignLocalAuthority.</para>
-        /// <para>This list can be used to validate messages from clients, to ensure that clients are only trying to control objects that they own.</para>
-        /// </summary>
-        // IMPORTANT: this needs to be <NetworkIdentity>, not <uint netId>. fixes a bug where DestroyOwnedObjects wouldn't find
-        //            the netId anymore: https://github.com/vis2k/Mirror/issues/1380 . Works fine with NetworkIdentity pointers though.
-        private readonly HashSet<NetworkIdentity> clientOwnedObjects = new HashSet<NetworkIdentity>();
-
-        /// <summary>
-        /// Creates a new NetworkConnection with the specified address and connectionId
-        /// </summary>
-        /// <param name="networkConnectionId"></param>
-        public NetworkPlayer(IConnection connection)
+        public MessageBroker(IConnection connection)
         {
-            Assert.IsNotNull(connection);
-            this.connection = connection;
-
+            Connection = connection;
             lastNotifySentTime = Time.unscaledTime;
+
+
             // a black message to ensure a notify timeout
             RegisterHandler<NotifyAck>(msg => { });
         }
 
-
-        private static NetworkMessageDelegate MessageHandler<T>(Action<INetworkPlayer, T> handler)
-        {
-            void AdapterFunction(INetworkPlayer player, NetworkReader reader, int channelId)
-            {
-                // protect against DOS attacks if attackers try to send invalid
-                // data packets to crash the server/client. there are a thousand
-                // ways to cause an exception in data handling:
-                // - invalid headers
-                // - invalid message ids
-                // - invalid data causing exceptions
-                // - negative ReadBytesAndSize prefixes
-                // - invalid utf8 strings
-                // - etc.
-                //
-                // let's catch them all and then disconnect that connection to avoid
-                // further attacks.
-                var message = default(T);
-                try
-                {
-                    message = reader.Read<T>();
-                }
-                finally
-                {
-                    NetworkDiagnostics.OnReceive(message, channelId, reader.Length);
-                }
-
-                handler(player, message);
-            }
-            return AdapterFunction;
-        }
+        #region Receive
 
         /// <summary>
         /// Register a handler for a particular message type.
@@ -176,55 +89,38 @@ namespace Mirage
             messageHandlers.Clear();
         }
 
-        /// <summary>
-        /// This sends a network message to the connection.
-        /// </summary>
-        /// <typeparam name="T">The message type</typeparam>
-        /// <param name="msg">The message to send.</param>
-        /// <param name="channelId">The transport layer channel to send on.</param>
-        /// <returns></returns>
-        public virtual void Send<T>(T message, int channelId = Channel.Reliable)
+
+        private static NetworkMessageDelegate MessageHandler<T>(Action<INetworkPlayer, T> handler)
         {
-            using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
+            void AdapterFunction(INetworkPlayer player, NetworkReader reader, int channelId)
             {
-                // pack message and send allocation free
-                MessagePacker.Pack(message, writer);
-                NetworkDiagnostics.OnSend(message, channelId, writer.Length, 1);
-                Send(writer.ToArraySegment(), channelId);
+                // protect against DOS attacks if attackers try to send invalid
+                // data packets to crash the server/client. there are a thousand
+                // ways to cause an exception in data handling:
+                // - invalid headers
+                // - invalid message ids
+                // - invalid data causing exceptions
+                // - negative ReadBytesAndSize prefixes
+                // - invalid utf8 strings
+                // - etc.
+                //
+                // let's catch them all and then disconnect that connection to avoid
+                // further attacks.
+                var message = default(T);
+                try
+                {
+                    message = reader.Read<T>();
+                }
+                finally
+                {
+                    NetworkDiagnostics.OnReceive(message, channelId, reader.Length);
+                }
+
+                handler(player, message);
             }
+            return AdapterFunction;
         }
 
-        // internal because no one except Mirage should send bytes directly to
-        // the client. they would be detected as a message. send messages instead.
-        public void Send(ArraySegment<byte> segment, int channelId = Channel.Reliable)
-        {
-            connection.Send(segment, channelId);
-        }
-
-
-        public override string ToString()
-        {
-            return $"connection({Address})";
-        }
-
-        public void AddToVisList(NetworkIdentity identity)
-        {
-            visList.Add(identity);
-        }
-
-        public void RemoveFromVisList(NetworkIdentity identity)
-        {
-            visList.Remove(identity);
-        }
-
-        public void RemoveObservers()
-        {
-            foreach (NetworkIdentity identity in visList)
-            {
-                identity.RemoveObserverInternal(this);
-            }
-            visList.Clear();
-        }
 
         internal void InvokeHandler(int msgType, NetworkReader reader, int channelId)
         {
@@ -289,37 +185,6 @@ namespace Mirage
             }
         }
 
-        public void AddOwnedObject(NetworkIdentity networkIdentity)
-        {
-            clientOwnedObjects.Add(networkIdentity);
-        }
-
-        public void RemoveOwnedObject(NetworkIdentity networkIdentity)
-        {
-            clientOwnedObjects.Remove(networkIdentity);
-        }
-
-        public void DestroyOwnedObjects()
-        {
-            // create a copy because the list might be modified when destroying
-            var tmp = new HashSet<NetworkIdentity>(clientOwnedObjects);
-            foreach (NetworkIdentity netIdentity in tmp)
-            {
-                //dont destroy self yet.
-                if (netIdentity != null && netIdentity != Identity && Identity.ServerObjectManager != null)
-                {
-                    Identity.ServerObjectManager.Destroy(netIdentity.gameObject);
-                }
-            }
-
-            if (Identity != null && Identity.Server != null)
-                // Destroy the connections own identity.
-                Identity.ServerObjectManager.Destroy(Identity.gameObject);
-
-            // clear the hashset because we destroyed them all
-            clientOwnedObjects.Clear();
-        }
-
         public async UniTask ProcessMessagesAsync()
         {
             var buffer = new MemoryStream();
@@ -340,6 +205,37 @@ namespace Mirage
                 // connection closed,  normal
             }
         }
+
+        #endregion
+
+        #region Send
+
+        /// <summary>
+        /// This sends a network message to the connection.
+        /// </summary>
+        /// <typeparam name="T">The message type</typeparam>
+        /// <param name="msg">The message to send.</param>
+        /// <param name="channelId">The transport layer channel to send on.</param>
+        /// <returns></returns>
+        public virtual void Send<T>(T message, int channelId = Channel.Reliable)
+        {
+            using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
+            {
+                // pack message and send allocation free
+                MessagePacker.Pack(message, writer);
+                NetworkDiagnostics.OnSend(message, channelId, writer.Length, 1);
+                Send(writer.ToArraySegment(), channelId);
+            }
+        }
+
+        // internal because no one except Mirage should send bytes directly to
+        // the client. they would be detected as a message. send messages instead.
+        public void Send(ArraySegment<byte> segment, int channelId = Channel.Reliable)
+        {
+            connection.Send(segment, channelId);
+        }
+
+        #endregion
 
         #region Notify
 
@@ -472,5 +368,140 @@ namespace Mirage
         /// </summary>
         public event Action<INetworkPlayer, object> NotifyLost;
         #endregion
+    }
+
+    [NetworkMessage]
+    public struct NotifyAck
+    {
+    }
+
+    /// <summary>
+    /// A High level network connection. This is used for connections from client-to-server and for connection from server-to-client.
+    /// </summary>
+    /// <remarks>
+    /// <para>A NetworkConnection corresponds to a specific connection for a host in the transport layer. It has a connectionId that is assigned by the transport layer and passed to the Initialize function.</para>
+    /// <para>A NetworkClient has one NetworkConnection. A NetworkServerSimple manages multiple NetworkConnections. The NetworkServer has multiple "remote" connections and a "local" connection for the local client.</para>
+    /// <para>The NetworkConnection class provides message sending and handling facilities. For sending data over a network, there are methods to send message objects, byte arrays, and NetworkWriter objects. To handle data arriving from the network, handler functions can be registered for message Ids, byte arrays can be processed by HandleBytes(), and NetworkReader object can be processed by HandleReader().</para>
+    /// <para>NetworkConnection objects also act as observers for networked objects. When a connection is an observer of a networked object with a NetworkIdentity, then the object will be visible to corresponding client for the connection, and incremental state changes will be sent to the client.</para>
+    /// <para>There are many virtual functions on NetworkConnection that allow its behaviour to be customized. NetworkClient and NetworkServer can both be made to instantiate custom classes derived from NetworkConnection by setting their networkConnectionClass member variable.</para>
+    /// </remarks>
+    public class NetworkPlayer : INetworkPlayer
+    {
+        static readonly ILogger logger = LogFactory.GetLogger(typeof(NetworkPlayer));
+
+
+        // internal so it can be tested
+        private readonly HashSet<NetworkIdentity> visList = new HashSet<NetworkIdentity>();
+
+
+        /// <summary>
+        /// General purpose object to hold authentication data, character selection, tokens, etc.
+        /// associated with the connection for reference after Authentication completes.
+        /// </summary>
+        public object AuthenticationData { get; set; }
+
+        /// <summary>
+        /// Flag that tells if the connection has been marked as "ready" by a client calling ClientScene.Ready().
+        /// <para>This property is read-only. It is set by the system on the client when ClientScene.Ready() is called, and set by the system on the server when a ready message is received from a client.</para>
+        /// <para>A client that is ready is sent spawned objects by the server and updates to the state of spawned objects. A client that is not ready is not sent spawned objects.</para>
+        /// </summary>
+        public bool IsReady { get; set; }
+
+        /// <summary>
+        /// The IP address / URL / FQDN associated with the connection.
+        /// Can be useful for a game master to do IP Bans etc.
+        /// </summary>
+        public virtual EndPoint Address => Connection.GetEndPointAddress();
+
+        /// <summary>
+        /// Transport level connection
+        /// </summary>
+        /// <remarks>
+        /// <para>On a server, this Id is unique for every connection on the server. On a client this Id is local to the client, it is not the same as the Id on the server for this connection.</para>
+        /// <para>Transport layers connections begin at one. So on a client with a single connection to a server, the connectionId of that connection will be one. In NetworkServer, the connectionId of the local connection is zero.</para>
+        /// <para>Clients do not know their connectionId on the server, and do not know the connectionId of other clients on the server.</para>
+        /// </remarks>
+        public IConnection Connection { get; }
+        public IMessageHandler MessageHandler { get; }
+
+        /// <summary>
+        /// The NetworkIdentity for this connection.
+        /// </summary>
+        public NetworkIdentity Identity { get; set; }
+
+        /// <summary>
+        /// A list of the NetworkIdentity objects owned by this connection. This list is read-only.
+        /// <para>This includes the player object for the connection - if it has localPlayerAutority set, and any objects spawned with local authority or set with AssignLocalAuthority.</para>
+        /// <para>This list can be used to validate messages from clients, to ensure that clients are only trying to control objects that they own.</para>
+        /// </summary>
+        // IMPORTANT: this needs to be <NetworkIdentity>, not <uint netId>. fixes a bug where DestroyOwnedObjects wouldn't find
+        //            the netId anymore: https://github.com/vis2k/Mirror/issues/1380 . Works fine with NetworkIdentity pointers though.
+        private readonly HashSet<NetworkIdentity> clientOwnedObjects = new HashSet<NetworkIdentity>();
+
+        /// <summary>
+        /// Creates a new NetworkConnection with the specified address and connectionId
+        /// </summary>
+        /// <param name="networkConnectionId"></param>
+        public NetworkPlayer(IConnection connection, IMessageHandler messageHandler)
+        {
+            Assert.IsNotNull(connection);
+            Connection = connection;
+            MessageHandler = messageHandler;
+        }
+
+        public override string ToString()
+        {
+            return $"connection({Address})";
+        }
+
+        public void AddToVisList(NetworkIdentity identity)
+        {
+            visList.Add(identity);
+        }
+
+        public void RemoveFromVisList(NetworkIdentity identity)
+        {
+            visList.Remove(identity);
+        }
+
+        public void RemoveObservers()
+        {
+            foreach (NetworkIdentity identity in visList)
+            {
+                identity.RemoveObserverInternal(this);
+            }
+            visList.Clear();
+        }
+
+        public void AddOwnedObject(NetworkIdentity networkIdentity)
+        {
+            clientOwnedObjects.Add(networkIdentity);
+        }
+
+        public void RemoveOwnedObject(NetworkIdentity networkIdentity)
+        {
+            clientOwnedObjects.Remove(networkIdentity);
+        }
+
+        public void DestroyOwnedObjects()
+        {
+            // create a copy because the list might be modified when destroying
+            var tmp = new HashSet<NetworkIdentity>(clientOwnedObjects);
+            foreach (NetworkIdentity netIdentity in tmp)
+            {
+                //dont destroy self yet.
+                if (netIdentity != null && netIdentity != Identity && Identity.ServerObjectManager != null)
+                {
+                    Identity.ServerObjectManager.Destroy(netIdentity.gameObject);
+                }
+            }
+
+            if (Identity != null && Identity.Server != null)
+                // Destroy the connections own identity.
+                Identity.ServerObjectManager.Destroy(Identity.gameObject);
+
+            // clear the hashset because we destroyed them all
+            clientOwnedObjects.Clear();
+        }
     }
 }

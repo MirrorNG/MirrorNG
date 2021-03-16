@@ -66,6 +66,7 @@ namespace Mirage
     /// <summary>
     /// An object that can send and receive messages and notify messages
     /// </summary>
+    [System.Obsolete("Use 4 smaller interfaces instead")]
     public interface IMessageHandler : IMessageSender, IMessageReceiver, INotifySender, INotifyReceiver
     {
 
@@ -97,9 +98,11 @@ namespace Mirage
     /// A connection to a remote endpoint.
     /// May be from the server to client or from client to server
     /// </summary>
-    public interface INetworkPlayer : IMessageHandler, IVisibilityTracker, IObjectOwner, IAuthenticatedObject, ISceneLoader
+    public interface INetworkPlayer : IVisibilityTracker, IObjectOwner, IAuthenticatedObject, ISceneLoader
     {
         IConnection Connection { get; }
+        // todo use smaller interfaces instead of IMessageHandler
+        IMessageHandler MessageHandler { get; }
     }
 
     public interface IAuthenticatedObject
