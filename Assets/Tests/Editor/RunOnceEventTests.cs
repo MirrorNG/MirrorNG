@@ -3,7 +3,7 @@ using NUnit.Framework;
 using NUnit.Framework.Internal;
 using UnityEngine.Events;
 
-namespace Mirage.Tests
+namespace Mirage.Events.Tests
 {
     public abstract class RunOnceEventTestsBase
     {
