@@ -6,6 +6,45 @@ using NUnit.Framework;
 
 namespace Mirage.Tests
 {
+    public class MessageBrokerTest
+    {
+        private MessageBroker messageBroker;
+
+        [SetUp]
+        public void Setup()
+        {
+            messageBroker = new MessageBroker();
+        }
+
+        [Test]
+        public void NoHandler()
+        {
+            int messageId = MessagePacker.GetId<SceneMessage>();
+            var reader = new NetworkReader(new byte[] { 1, 2, 3, 4 });
+            InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
+            {
+                messageBroker.InvokeHandler(Arg.Any<INetworkPlayer>(), messageId, reader, 0);
+            });
+
+            Assert.That(exception.Message, Does.StartWith("Unexpected message Mirage.SceneMessage received"));
+        }
+
+        [Test]
+        public void UnknownMessage()
+        {
+            _ = MessagePacker.GetId<SceneMessage>();
+            var reader = new NetworkReader(new byte[] { 1, 2, 3, 4 });
+            InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
+            {
+                // some random id with no message
+                messageBroker.InvokeHandler(Arg.Any<INetworkPlayer>(), 1234, reader, 0);
+            });
+
+            Assert.That(exception.Message, Does.StartWith("Unexpected message ID 1234 received"));
+        }
+
+
+    }
     public class MessageBrokerNofityTest
     {
         private MessageBroker messageBroker;
@@ -245,44 +284,5 @@ namespace Mirage.Tests
         }
 
         #endregion
-    }
-    public class MessageBrokerHandlerTest
-    {
-        private MessageBroker messageBroker;
-
-        [SetUp]
-        public void Setup()
-        {
-            messageBroker = new MessageBroker();
-        }
-
-        [Test]
-        public void NoHandler()
-        {
-            int messageId = MessagePacker.GetId<SceneMessage>();
-            var reader = new NetworkReader(new byte[] { 1, 2, 3, 4 });
-            InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
-            {
-                messageBroker.InvokeHandler(Arg.Any<INetworkPlayer>(), messageId, reader, 0);
-            });
-
-            Assert.That(exception.Message, Does.StartWith("Unexpected message Mirage.SceneMessage received"));
-        }
-
-        [Test]
-        public void UnknownMessage()
-        {
-            _ = MessagePacker.GetId<SceneMessage>();
-            var reader = new NetworkReader(new byte[] { 1, 2, 3, 4 });
-            InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
-            {
-                // some random id with no message
-                messageBroker.InvokeHandler(Arg.Any<INetworkPlayer>(), 1234, reader, 0);
-            });
-
-            Assert.That(exception.Message, Does.StartWith("Unexpected message ID 1234 received"));
-        }
-
-
     }
 }
