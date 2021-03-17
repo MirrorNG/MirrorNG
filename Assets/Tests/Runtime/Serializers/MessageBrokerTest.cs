@@ -81,13 +81,14 @@ namespace Mirage.Tests
                 Array.Copy(data.Array, data.Offset, lastSerializedPacket, 0, data.Count);
             }
 
-            connection.Send(
-                Arg.Do<ArraySegment<byte>>(ParsePacket), Channel.Unreliable);
+            // add ParsePacket function to Substitute to validate
+            connection.Send(Arg.Do<ArraySegment<byte>>(ParsePacket), Channel.Unreliable);
 
-            player = new NetworkPlayer(connection, Substitute.For<IMessageHandler>());
+            player = Substitute.For<INetworkPlayer>();
+            player.Connection.Returns(connection);
 
             serializedMessage = MessagePacker.Pack(new ReadyMessage());
-            //messageBroker.RegisterHandler<ReadyMessage>(message => { });
+            messageBroker.RegisterHandler<ReadyMessage>(message => { });
 
             delivered = Substitute.For<Action<INetworkPlayer, object>>();
             lost = Substitute.For<Action<INetworkPlayer, object>>();
@@ -95,7 +96,6 @@ namespace Mirage.Tests
             messageBroker.NotifyDelivered += delivered;
             messageBroker.NotifyLost += lost;
         }
-        #region Notify
 
 
         [Test]
@@ -282,7 +282,5 @@ namespace Mirage.Tests
 
             delivered.Received().Invoke(player, 5);
         }
-
-        #endregion
     }
 }

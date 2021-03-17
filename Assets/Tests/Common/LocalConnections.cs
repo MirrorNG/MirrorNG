@@ -2,7 +2,6 @@ using NSubstitute;
 
 namespace Mirage.Tests
 {
-
     public static class LocalConnections
     {
         public static (NetworkPlayer, NetworkPlayer) PipedConnections(IMessageHandler serverHandler, IMessageHandler clientHandler)
@@ -13,6 +12,7 @@ namespace Mirage.Tests
 
             return (toServer, toClient);
         }
+
         public static (NetworkPlayer, NetworkPlayer) PipedConnections()
         {
             return PipedConnections(Substitute.For<IMessageHandler>(), Substitute.For<IMessageHandler>());
