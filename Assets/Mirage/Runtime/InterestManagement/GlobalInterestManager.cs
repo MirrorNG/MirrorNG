@@ -7,7 +7,7 @@ namespace Mirage.InterestManagement
     /// </summary>
     public class GlobalInterestManager : InterestManager
     {
-        public override IEnumerable<INetworkPlayer> Observers(NetworkIdentity identity)
+        public override IReadOnlyCollection<INetworkPlayer> Observers(NetworkIdentity identity)
         {
             return ServerObjectManager.Server.Players;
         }

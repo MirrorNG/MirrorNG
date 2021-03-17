@@ -8,7 +8,6 @@ using UnityEngine.Events;
 using Mirage.Logging;
 using Mirage.Serialization;
 using Mirage.InterestManagement;
-using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
 #if UNITY_2018_3_OR_NEWER
@@ -151,22 +150,24 @@ namespace Mirage
         /// </summary>
         public uint NetId { get; internal set; }
 
+        private static readonly IReadOnlyCollection<INetworkPlayer> emptyList = new List<INetworkPlayer>();
+        
         /// <summary>
         /// Returns list of players that can see this object
         /// </summary>
         /// <remarks>Returns empty list if the object has not been spawned yet</remarks>
         /// <remarks>Returns empty list if this is not a server object</remarks>
-        public IEnumerable<INetworkPlayer> Observers
+        public IReadOnlyCollection<INetworkPlayer> Observers
         {
             get
             {
                 if (ServerObjectManager == null)
-                    return Enumerable.Empty<INetworkPlayer>();
+                    return emptyList;
 
                 InterestManager interestManager = ServerObjectManager.InterestManager;
 
                 if (interestManager == null)
-                    return Enumerable.Empty<INetworkPlayer>();
+                    return emptyList;
 
                 return interestManager.Observers(this);
             }
@@ -978,7 +979,8 @@ namespace Mirage
 
         internal void ServerUpdate()
         {
-            if (Observers.Any())
+            
+            if (Observers.Count > 0)
             {
                 SendUpdateVarsMessage();
             }
@@ -1050,7 +1052,7 @@ namespace Mirage
         {
             if (logger.LogEnabled()) logger.Log("Server.SendToObservers id:" + typeof(T));
 
-            if (!Observers.Any())
+            if (Observers.Count == 0)
                 return;
 
             if (includeOwner)

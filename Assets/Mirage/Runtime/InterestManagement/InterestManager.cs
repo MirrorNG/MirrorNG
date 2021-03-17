@@ -48,6 +48,6 @@ namespace Mirage.InterestManagement
         /// </summary>
         /// <param name="identity"></param>
         /// <returns></returns>
-        public abstract IEnumerable<INetworkPlayer> Observers(NetworkIdentity identity);
+        public abstract IReadOnlyCollection<INetworkPlayer> Observers(NetworkIdentity identity);
     }
 }
