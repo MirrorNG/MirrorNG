@@ -11,7 +11,7 @@ namespace Mirage
     /// <summary>
     /// Sends and handles messages
     /// </summary>
-    public class MessageBroker : IMessageSender, IMessageReceiver, INotifySender, INotifyReceiver
+    public sealed class MessageBroker : IMessageHandler, IMessageSender, IMessageReceiver, INotifySender, INotifyReceiver
     {
         static readonly ILogger logger = LogFactory.GetLogger(typeof(MessageBroker));
 
@@ -21,21 +21,9 @@ namespace Mirage
         // message handlers for this connection
         internal readonly Dictionary<int, NetworkMessageDelegate> messageHandlers = new Dictionary<int, NetworkMessageDelegate>();
 
-        /// <summary>
-        /// Transport level connection
-        /// </summary>
-        /// <remarks>
-        /// <para>On a server, this Id is unique for every connection on the server. On a client this Id is local to the client, it is not the same as the Id on the server for this connection.</para>
-        /// <para>Transport layers connections begin at one. So on a client with a single connection to a server, the connectionId of that connection will be one. In NetworkServer, the connectionId of the local connection is zero.</para>
-        /// <para>Clients do not know their connectionId on the server, and do not know the connectionId of other clients on the server.</para>
-        /// </remarks>
-        public IConnection Connection { get; }
-
-        public MessageBroker(IConnection connection)
+        public MessageBroker()
         {
-            Connection = connection;
             lastNotifySentTime = Time.unscaledTime;
-
 
             // a black message to ensure a notify timeout
             RegisterHandler<NotifyAck>(msg => { });
@@ -181,7 +169,7 @@ namespace Mirage
                 catch (Exception ex)
                 {
                     logger.LogError("Closed connection: " + this + ". Invalid message " + ex);
-                    Connection?.Disconnect();
+                    player?.Connection?.Disconnect();
                 }
             }
         }
@@ -218,9 +206,9 @@ namespace Mirage
         /// <param name="msg">The message to send.</param>
         /// <param name="channelId">The transport layer channel to send on.</param>
         /// <returns></returns>
-        public virtual void Send<T>(INetworkPlayer player, T message, int channelId = Channel.Reliable)
+        public void Send<T>(IConnection connection, T message, int channelId = Channel.Reliable)
         {
-            if (player.Connection == null)
+            if (connection == null)
             {
                 // todo invoke locally when sending to player without connecton
                 logger.LogError("can't send to player without connection");
@@ -232,21 +220,39 @@ namespace Mirage
                 // pack message and send allocation free
                 MessagePacker.Pack(message, writer);
                 NetworkDiagnostics.OnSend(message, channelId, writer.Length, 1);
-                Send(player, writer.ToArraySegment(), channelId);
+                Send(connection, writer.ToArraySegment(), channelId);
             }
+        }
+
+        // internal because no one except Mirage should send bytes directly to
+        // the client. they would be detected as a message. send messages instead.
+        public void Send(IConnection connection, ArraySegment<byte> segment, int channelId = Channel.Reliable)
+        {
+            if (connection == null)
+            {
+                // todo invoke locally when sending to player without connecton
+                logger.LogError("can't send to player without connection");
+                return;
+            }
+            connection.Send(segment, channelId);
+        }
+        /// <summary>
+        /// This sends a network message to the connection.
+        /// </summary>
+        /// <typeparam name="T">The message type</typeparam>
+        /// <param name="msg">The message to send.</param>
+        /// <param name="channelId">The transport layer channel to send on.</param>
+        /// <returns></returns>
+        public void Send<T>(INetworkPlayer player, T message, int channelId = Channel.Reliable)
+        {
+            Send(player.Connection, message, channelId);
         }
 
         // internal because no one except Mirage should send bytes directly to
         // the client. they would be detected as a message. send messages instead.
         public void Send(INetworkPlayer player, ArraySegment<byte> segment, int channelId = Channel.Reliable)
         {
-            if (player.Connection == null)
-            {
-                // todo invoke locally when sending to player without connecton
-                logger.LogError("can't send to player without connection");
-                return;
-            }
-            player.Connection.Send(segment, channelId);
+            Send(player.Connection, segment, channelId);
         }
 
         #endregion

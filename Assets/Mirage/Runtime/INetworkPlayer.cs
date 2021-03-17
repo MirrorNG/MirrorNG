@@ -9,7 +9,6 @@ namespace Mirage
     public interface IMessageSender
     {
         void Send<T>(INetworkPlayer player, T message, int channelId = Channel.Reliable);
-
         void Send(INetworkPlayer player, ArraySegment<byte> segment, int channelId = Channel.Reliable);
     }
 
@@ -66,7 +65,6 @@ namespace Mirage
     /// <summary>
     /// An object that can send and receive messages and notify messages
     /// </summary>
-    [System.Obsolete("Use 4 smaller interfaces instead")]
     public interface IMessageHandler : IMessageSender, IMessageReceiver, INotifySender, INotifyReceiver
     {
 
@@ -98,11 +96,13 @@ namespace Mirage
     /// A connection to a remote endpoint.
     /// May be from the server to client or from client to server
     /// </summary>
-    public interface INetworkPlayer : IVisibilityTracker, IObjectOwner, IAuthenticatedObject, ISceneLoader
+    public interface INetworkPlayer : IMessageSender, IVisibilityTracker, IObjectOwner, IAuthenticatedObject, ISceneLoader
     {
         IConnection Connection { get; }
-        // todo use smaller interfaces instead of IMessageHandler
-        IMessageHandler MessageHandler { get; }
+
+        IMessageHandler messageHandler { get; }
+        void Send<T>(T message, int channelId = 0);
+        void Send(ArraySegment<byte> segment, int channelId = 0);
     }
 
     public interface IAuthenticatedObject

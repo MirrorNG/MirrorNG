@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using Mirage.Logging;
@@ -139,6 +140,16 @@ namespace Mirage
 
             // clear the hashset because we destroyed them all
             clientOwnedObjects.Clear();
+        }
+
+        public void Send<T>(T message, int channelId = 0)
+        {
+            MessageHandler.Send(this, message, channelId);
+        }
+
+        public void Send(ArraySegment<byte> segment, int channelId = 0)
+        {
+            MessageHandler.Send(this, segment, channelId);
         }
     }
 }
