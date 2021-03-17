@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mirage.Logging;
 using Mirage.RemoteCalls;
+using Mirage.Serialization;
 using UnityEngine;
 using UnityEngine.Serialization;
-using Mirage.Logging;
-using Mirage.Serialization;
 
 namespace Mirage
 {
@@ -105,8 +105,8 @@ namespace Mirage
 
         internal void RegisterMessageHandlers(INetworkPlayer player)
         {
-            player.RegisterHandler<ReadyMessage>(OnClientReadyMessage);
-            player.RegisterHandler<ServerRpcMessage>(OnServerRpcMessage);
+            Server.MessageHandler.RegisterHandler<ReadyMessage>(OnClientReadyMessage);
+            Server.MessageHandler.RegisterHandler<ServerRpcMessage>(OnServerRpcMessage);
         }
 
         void OnAuthenticated(INetworkPlayer player)

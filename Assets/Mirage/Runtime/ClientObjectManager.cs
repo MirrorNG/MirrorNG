@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Mirage.Logging;
 using Mirage.RemoteCalls;
+using Mirage.Serialization;
 using UnityEngine;
 using UnityEngine.Serialization;
-using Mirage.Logging;
-using Mirage.Serialization;
 
 namespace Mirage
 {
@@ -123,24 +123,24 @@ namespace Mirage
 
         internal void RegisterHostHandlers()
         {
-            Client.Player.RegisterHandler<ObjectDestroyMessage>(OnHostClientObjectDestroy);
-            Client.Player.RegisterHandler<ObjectHideMessage>(msg => { });
-            Client.Player.RegisterHandler<SpawnMessage>(OnHostClientSpawn);
-            Client.Player.RegisterHandler<ServerRpcReply>(OnServerRpcReply);
+            Client.MessageHandler.RegisterHandler<ObjectDestroyMessage>(OnHostClientObjectDestroy);
+            Client.MessageHandler.RegisterHandler<ObjectHideMessage>(msg => { });
+            Client.MessageHandler.RegisterHandler<SpawnMessage>(OnHostClientSpawn);
+            Client.MessageHandler.RegisterHandler<ServerRpcReply>(OnServerRpcReply);
             // host mode reuses objects in the server
             // so we don't need to spawn them
-            Client.Player.RegisterHandler<UpdateVarsMessage>(msg => { });
-            Client.Player.RegisterHandler<RpcMessage>(OnRpcMessage);
+            Client.MessageHandler.RegisterHandler<UpdateVarsMessage>(msg => { });
+            Client.MessageHandler.RegisterHandler<RpcMessage>(OnRpcMessage);
         }
 
         internal void RegisterMessageHandlers()
         {
-            Client.Player.RegisterHandler<ObjectDestroyMessage>(OnObjectDestroy);
-            Client.Player.RegisterHandler<ObjectHideMessage>(OnObjectHide);
-            Client.Player.RegisterHandler<SpawnMessage>(OnSpawn);
-            Client.Player.RegisterHandler<ServerRpcReply>(OnServerRpcReply);
-            Client.Player.RegisterHandler<UpdateVarsMessage>(OnUpdateVarsMessage);
-            Client.Player.RegisterHandler<RpcMessage>(OnRpcMessage);
+            Client.MessageHandler.RegisterHandler<ObjectDestroyMessage>(OnObjectDestroy);
+            Client.MessageHandler.RegisterHandler<ObjectHideMessage>(OnObjectHide);
+            Client.MessageHandler.RegisterHandler<SpawnMessage>(OnSpawn);
+            Client.MessageHandler.RegisterHandler<ServerRpcReply>(OnServerRpcReply);
+            Client.MessageHandler.RegisterHandler<UpdateVarsMessage>(OnUpdateVarsMessage);
+            Client.MessageHandler.RegisterHandler<RpcMessage>(OnRpcMessage);
         }
 
         bool ConsiderForSpawning(NetworkIdentity identity)

@@ -87,37 +87,42 @@ namespace Mirage
         /// </summary>
         internal List<string> pendingAdditiveSceneList = new List<string>();
 
+        IMessageHandler messageHandler;
+
         public void Start()
         {
             if (DontDestroy)
                 DontDestroyOnLoad(gameObject);
 
+            // todo get MessageHandler in a different way, MessageHandler should exist outside of client/server
             if (Client != null)
             {
                 Client.Authenticated.AddListener(OnClientAuthenticated);
+                Client.Connected.AddListener((_) => { messageHandler = Client.MessageHandler; });
             }
             if (Server != null)
             {
                 Server.Authenticated.AddListener(OnServerAuthenticated);
+                Server.Started.AddListener(() => { messageHandler = Server.MessageHandler; });
             }
         }
 
         #region Client
 
-        void RegisterClientMessages(INetworkPlayer player)
+        void RegisterClientMessages()
         {
-            player.RegisterHandler<SceneMessage>(ClientSceneMessage);
+            messageHandler.RegisterHandler<SceneMessage>(ClientSceneMessage);
             if (!Client.IsLocalClient)
             {
-                player.RegisterHandler<SceneReadyMessage>(ClientSceneReadyMessage);
-                player.RegisterHandler<NotReadyMessage>(ClientNotReadyMessage);
+                messageHandler.RegisterHandler<SceneReadyMessage>(ClientSceneReadyMessage);
+                messageHandler.RegisterHandler<NotReadyMessage>(ClientNotReadyMessage);
             }
         }
 
         void OnClientAuthenticated(INetworkPlayer player)
         {
             logger.Log("NetworkSceneManager.OnClientAuthenticated");
-            RegisterClientMessages(player);
+            RegisterClientMessages();
         }
 
         void OnDestroy()
@@ -231,8 +236,8 @@ namespace Mirage
         {
             logger.Log("NetworkSceneManager.OnServerAuthenticated");
 
-            player.Send(new SceneMessage { scenePath = ActiveScenePath, additiveScenes = additiveSceneList.ToArray() });
-            player.Send(new SceneReadyMessage());
+            messageHandler.Send(player, new SceneMessage { scenePath = ActiveScenePath, additiveScenes = additiveSceneList.ToArray() });
+            messageHandler.Send(player, new SceneReadyMessage());
         }
 
         /// <summary>

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Mirage.Logging;
 using UnityEngine;
 using UnityEngine.Serialization;
-using Mirage.Logging;
 
 namespace Mirage
 {
@@ -85,7 +85,7 @@ namespace Mirage
         private void OnServerAuthenticated(INetworkPlayer player)
         {
             // wait for client to send us an AddPlayerMessage
-            player.RegisterHandler<AddCharacterMessage>(OnServerAddPlayerInternal);
+            Server.MessageHandler.RegisterHandler<AddCharacterMessage>(OnServerAddPlayerInternal);
         }
 
         /// <summary>
