@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Mirage.Logging;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
-using Mirage.Logging;
 
 namespace Mirage
 {
@@ -78,7 +78,10 @@ namespace Mirage
         /// </summary>
         public bool IsConnected => connectState == ConnectState.Connected;
 
+        public IMessageHandler MessageHandler { get; private set; }
+
         readonly NetworkTime _time = new NetworkTime();
+
         /// <summary>
         /// Time kept in this client
         /// </summary>
@@ -141,6 +144,7 @@ namespace Mirage
             if (Transport == null)
                 throw new InvalidOperationException("Transport could not be found for NetworkClient");
 
+            MessageHandler = new MessageBroker();
             connectState = ConnectState.Connecting;
 
             try
@@ -187,7 +191,7 @@ namespace Mirage
         /// </summary>
         public virtual INetworkPlayer GetNewPlayer(IConnection connection)
         {
-            return new NetworkPlayer(connection);
+            return new NetworkPlayer(connection, MessageHandler);
         }
 
         void InitializeAuthEvents()
@@ -217,7 +221,7 @@ namespace Mirage
             // start processing messages
             try
             {
-                await Player.ProcessMessagesAsync();
+                await MessageHandler.ProcessMessagesAsync(Player);
             }
             catch (Exception ex)
             {
@@ -256,12 +260,12 @@ namespace Mirage
         /// <returns>True if message was sent.</returns>
         public void Send<T>(T message, int channelId = Channel.Reliable)
         {
-            Player.Send(message, channelId);
+            MessageHandler.Send(Player, message, channelId);
         }
 
         public void Send(ArraySegment<byte> segment, int channelId = Channel.Reliable)
         {
-            Player.Send(segment, channelId);
+            MessageHandler.Send(Player, segment, channelId);
         }
 
         internal void Update()
@@ -276,12 +280,12 @@ namespace Mirage
 
         internal void RegisterHostHandlers()
         {
-            Player.RegisterHandler<NetworkPongMessage>(msg => { });
+            MessageHandler.RegisterHandler<NetworkPongMessage>(msg => { });
         }
 
         internal void RegisterMessageHandlers()
         {
-            Player.RegisterHandler<NetworkPongMessage>(Time.OnClientPong);
+            MessageHandler.RegisterHandler<NetworkPongMessage>(Time.OnClientPong);
         }
 
 
@@ -308,6 +312,7 @@ namespace Mirage
                 // if no authenticator, consider connection as authenticated
                 Connected.RemoveListener(OnAuthenticated);
             }
+            MessageHandler = null;
         }
     }
 }
