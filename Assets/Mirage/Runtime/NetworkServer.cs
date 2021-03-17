@@ -363,7 +363,7 @@ namespace Mirage
             SendToMany(Players, msg, channelId);
         }
 
-        public static void SendToMany<T>(IEnumerable<INetworkPlayer> players, T msg, int channelId = Channel.Reliable)
+        public static void SendToMany<T, L>(L players, T msg, int channelId = Channel.Reliable) where L : IEnumerable<INetworkPlayer>
         {
             using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
             {
