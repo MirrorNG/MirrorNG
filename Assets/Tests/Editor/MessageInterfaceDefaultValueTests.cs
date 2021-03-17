@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -11,8 +11,8 @@ namespace Mirage
         {
             IMessageSender sender = Substitute.For<IMessageSender>();
             var msg = new NetworkPingMessage();
-            sender.Send(msg);
-            sender.Received(1).Send(msg, Channel.Reliable);
+            sender.Send(default, msg);
+            sender.Received(1).Send(Arg.Any<INetworkPlayer>(), msg, Channel.Reliable);
         }
 
         [Test]
@@ -20,8 +20,8 @@ namespace Mirage
         {
             IMessageSender sender = Substitute.For<IMessageSender>();
             var segment = new ArraySegment<byte>();
-            sender.Send(segment);
-            sender.Received(1).Send(segment, Channel.Reliable);
+            sender.Send(default, segment);
+            sender.Received(1).Send(Arg.Any<INetworkPlayer>(), segment, Channel.Reliable);
         }
 
         [Test]
@@ -30,8 +30,8 @@ namespace Mirage
             INotifySender sender = Substitute.For<INotifySender>();
             var msg = new NetworkPingMessage();
             object token = new object();
-            sender.SendNotify(msg, token);
-            sender.Received(1).SendNotify(msg, token, Channel.Unreliable);
+            sender.SendNotify(default, msg, token);
+            sender.Received(1).SendNotify(Arg.Any<INetworkPlayer>(), msg, token, Channel.Unreliable);
         }
     }
 }
