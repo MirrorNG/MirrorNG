@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using NSubstitute;
 using NUnit.Framework;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -65,7 +66,7 @@ namespace Mirage.Tests
         {
             (IConnection conn1, IConnection _) = PipeConnection.CreatePipe();
 
-            var connection = new NetworkPlayer(conn1)
+            var connection = new NetworkPlayer(conn1, Substitute.For<IMessageHandler>())
             {
                 Identity = player.GetComponent<NetworkIdentity>()
             };

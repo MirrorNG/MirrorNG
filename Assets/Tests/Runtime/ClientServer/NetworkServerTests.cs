@@ -35,7 +35,7 @@ namespace Mirage.Tests.ClientServer
         [UnityTest]
         public IEnumerator ReadyMessageSetsClientReadyTest() => UniTask.ToCoroutine(async () =>
         {
-            connectionToServer.Send(new ReadyMessage());
+            client.MessageHandler.Send(connectionToServer, new ReadyMessage());
 
             await AsyncUtil.WaitUntilWithTimeout(() => connectionToClient.IsReady);
 
@@ -48,11 +48,11 @@ namespace Mirage.Tests.ClientServer
         {
             bool invoked = false;
 
-            connectionToServer.RegisterHandler<WovenTestMessage>(msg => invoked = true);
+            client.MessageHandler.RegisterHandler<WovenTestMessage>(msg => invoked = true);
 
             server.SendToAll(message);
 
-            connectionToServer.ProcessMessagesAsync().Forget();
+            client.MessageHandler.ProcessMessagesAsync(connectionToServer).Forget();
 
             await AsyncUtil.WaitUntilWithTimeout(() => invoked);
         });
@@ -62,11 +62,11 @@ namespace Mirage.Tests.ClientServer
         {
             bool invoked = false;
 
-            connectionToServer.RegisterHandler<WovenTestMessage>(msg => invoked = true);
+            client.MessageHandler.RegisterHandler<WovenTestMessage>(msg => invoked = true);
 
             serverIdentity.ConnectionToClient.Send(message);
 
-            connectionToServer.ProcessMessagesAsync().Forget();
+            client.MessageHandler.ProcessMessagesAsync(connectionToServer).Forget();
 
             await AsyncUtil.WaitUntilWithTimeout(() => invoked);
         });
@@ -76,8 +76,8 @@ namespace Mirage.Tests.ClientServer
         {
             bool invoked = false;
 
-            connectionToClient.RegisterHandler<WovenTestMessage>(msg => invoked = true);
-            connectionToServer.Send(message);
+            server.MessageHandler.RegisterHandler<WovenTestMessage>(msg => invoked = true);
+            client.MessageHandler.Send(connectionToServer, message);
 
             await AsyncUtil.WaitUntilWithTimeout(() => invoked);
 
@@ -88,9 +88,9 @@ namespace Mirage.Tests.ClientServer
         {
             bool invoked = false;
 
-            connectionToClient.RegisterHandler<WovenTestMessage>((conn, msg) => invoked = true);
+            server.MessageHandler.RegisterHandler<WovenTestMessage>((conn, msg) => invoked = true);
 
-            connectionToServer.Send(message);
+            client.MessageHandler.Send(connectionToServer, message);
 
             await AsyncUtil.WaitUntilWithTimeout(() => invoked);
         });
@@ -100,10 +100,10 @@ namespace Mirage.Tests.ClientServer
         {
             Action<WovenTestMessage> func = Substitute.For<Action<WovenTestMessage>>();
 
-            connectionToClient.RegisterHandler(func);
-            connectionToClient.UnregisterHandler<WovenTestMessage>();
+            server.MessageHandler.RegisterHandler(func);
+            server.MessageHandler.UnregisterHandler<WovenTestMessage>();
 
-            connectionToServer.Send(message);
+            client.MessageHandler.Send(connectionToServer, message);
 
             await UniTask.Delay(1);
 

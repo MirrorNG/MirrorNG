@@ -39,13 +39,13 @@ namespace Mirage.Tests.Host
         [Test]
         public void ConnectionClearHandlersTest()
         {
-            var clientConn = client.Player as NetworkPlayer;
+            var handler = (MessageBroker)client.MessageHandler;
 
-            Assert.That(clientConn.messageHandlers.Count > 0);
+            Assert.That(handler.messageHandlers.Count > 0);
 
-            clientConn.ClearHandlers();
+            handler.ClearHandlers();
 
-            Assert.That(clientConn.messageHandlers.Count == 0);
+            Assert.That(handler.messageHandlers.Count == 0);
         }
 
         [Test]

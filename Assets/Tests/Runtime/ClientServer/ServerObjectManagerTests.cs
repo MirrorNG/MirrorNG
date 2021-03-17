@@ -70,14 +70,14 @@ namespace Mirage.Tests.ClientServer
         {
             bool invoked = false;
 
-            connectionToServer.RegisterHandler<SpawnMessage>(msg => invoked = true);
+            client.MessageHandler.RegisterHandler<SpawnMessage>(msg => invoked = true);
 
             connectionToClient.IsReady = true;
 
             // call ShowForConnection
             serverObjectManager.ShowForConnection(serverIdentity, connectionToClient);
 
-            connectionToServer.ProcessMessagesAsync().Forget();
+            client.MessageHandler.ProcessMessagesAsync(connectionToClient).Forget();
 
             await AsyncUtil.WaitUntilWithTimeout(() => invoked);
         });

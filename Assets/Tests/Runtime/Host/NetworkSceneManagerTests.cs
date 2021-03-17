@@ -66,8 +66,8 @@ namespace Mirage.Tests.Host
             bool invokeClientSceneMessage = false;
             bool invokeNotReadyMessage = false;
             UnityAction<string, SceneOperation> func1 = Substitute.For<UnityAction<string, SceneOperation>>();
-            client.Player.RegisterHandler<SceneMessage>(msg => invokeClientSceneMessage = true);
-            client.Player.RegisterHandler<NotReadyMessage>(msg => invokeNotReadyMessage = true);
+            client.MessageHandler.RegisterHandler<SceneMessage>(msg => invokeClientSceneMessage = true);
+            client.MessageHandler.RegisterHandler<NotReadyMessage>(msg => invokeNotReadyMessage = true);
             sceneManager.ServerChangeScene.AddListener(func1);
 
             sceneManager.ChangeServerScene("Assets/Mirror/Tests/Runtime/testScene.unity");
