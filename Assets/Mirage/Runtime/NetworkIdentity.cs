@@ -1040,6 +1040,28 @@ namespace Mirage
 
         static readonly List<INetworkPlayer> connectionsExcludeSelf = new List<INetworkPlayer>(100);
 
+
+        // this is basically a delegate for player.Send,
+        // but it is allocation free
+        readonly struct SendAction : InterestManager.PlayerAction
+        {
+            private readonly ArraySegment<byte> data;
+            private readonly int channel;
+            private readonly INetworkPlayer owner;
+
+            internal SendAction(ArraySegment<byte> data, int channel, INetworkPlayer owner)
+            {
+                this.data = data;
+                this.channel = channel;
+                this.owner = owner;
+            }
+            public void Run(INetworkPlayer player)
+            {
+                if (player != owner)
+                    player.Send(data, channel);
+            }
+        }
+
         /// <summary>
         /// this is like SendToReady - but it doesn't check the ready flag on the connection.
         /// this is used for ObjectDestroy messages.
@@ -1055,21 +1077,22 @@ namespace Mirage
             if (Observers.Count == 0)
                 return;
 
-            if (includeOwner)
+            using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
             {
-                NetworkServer.SendToMany(Observers, msg, channelId);
-            }
-            else
-            {
-                connectionsExcludeSelf.Clear();
-                foreach (INetworkPlayer player in Observers)
-                {
-                    if (ConnectionToClient != player)
-                    {
-                        connectionsExcludeSelf.Add(player);
-                    }
-                }
-                NetworkServer.SendToMany(connectionsExcludeSelf, msg, channelId);
+                // pack message into byte[] once
+                MessagePacker.Pack(msg, writer);
+                var segment = writer.ToArraySegment();
+                int count = Observers.Count;
+
+                InterestManager interestManager = ServerObjectManager.InterestManager;
+
+                // just a delegate to call send, but allocation free
+                SendAction action = new SendAction(segment, channelId, includeOwner ? null : ConnectionToClient);
+
+
+                interestManager.ForEach(this, action);
+
+                NetworkDiagnostics.OnSend(msg, channelId, segment.Count, count);
             }
         }
 

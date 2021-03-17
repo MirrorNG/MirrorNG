@@ -13,6 +13,19 @@ namespace Mirage.InterestManagement
     /// </summary>
     public abstract class InterestManager : MonoBehaviour
     {
+
+        /// <summary>
+        /// Action to execute per observer.
+        /// This is equivalent to <see cref="Action{T}"/>
+        /// but it allows for creating an allocation free "delegate"
+        /// This is used in the hot path.
+        /// </summary>
+        public interface PlayerAction
+        {
+            void Run(INetworkPlayer player);
+        }
+
+
         public ServerObjectManager ServerObjectManager;
 
         public void Start()
@@ -27,6 +40,25 @@ namespace Mirage.InterestManagement
                 server = GetComponent<NetworkServer>();
 
             server.Authenticated.AddListener(OnAuthenticated);
+        }
+
+        /// <summary>
+        /// Executes an action for every player that can observe an object
+        /// allocation free.
+        /// </summary>
+        /// <typeparam name="T">The action type</typeparam>
+        /// <param name="identity">The object that we are observing</param>
+        /// <param name="action">The action to execute for every observer</param>
+        public virtual void ForEach<T>(NetworkIdentity identity, T action) where T : struct, PlayerAction
+        {
+            // this is the default implementation which works,  but will allocate
+            // by boxing the IEnumerator.
+            // implementations of InterestManager should override this method
+            // and provide an allocation free alternative.
+            foreach (INetworkPlayer player in Observers(identity))
+            {
+                action.Run(player);
+            }
         }
 
         /// <summary>

@@ -7,6 +7,16 @@ namespace Mirage.InterestManagement
     /// </summary>
     public class GlobalInterestManager : InterestManager
     {
+        public override void ForEach<T>(NetworkIdentity identity, T action)
+        {
+            // avoids allocations by looping directly on the HashSet
+            // which avoids boxing the IEnumerator
+            foreach (INetworkPlayer player in ServerObjectManager.Server.Players)
+            {
+                action.Run(player);
+            }
+        }
+
         public override IReadOnlyCollection<INetworkPlayer> Observers(NetworkIdentity identity)
         {
             return ServerObjectManager.Server.Players;
