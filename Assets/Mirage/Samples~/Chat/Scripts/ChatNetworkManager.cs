@@ -24,7 +24,7 @@ namespace Mirage.Examples.Chat
 
         public void OnServerAuthenticated(INetworkPlayer player)
         {
-            player.RegisterHandler<CreateCharacterMessage>(OnCreatePlayer);
+            Server.MessageHandler.RegisterHandler<CreateCharacterMessage>(OnCreatePlayer);
         }
 
         public void OnClientAuthenticated(INetworkPlayer player)
