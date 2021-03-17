@@ -9,6 +9,17 @@ namespace Mirage
     [HelpURL("https://miragenet.github.io/Mirage/Articles/Components/Authenticators/index.html")]
     public abstract class NetworkAuthenticator : MonoBehaviour
     {
+        [SerializeField] protected NetworkServer Server;
+        [SerializeField] protected NetworkClient Client;
+
+        private void Awake()
+        {
+            if (Client == null)
+                Client = GetComponent<NetworkClient>();
+            if (Server == null)
+                Server = GetComponent<NetworkServer>();
+        }
+
         /// <summary>
         /// Notify subscribers on the server when a client is authenticated
         /// </summary>
@@ -62,16 +73,16 @@ namespace Mirage
         {
             UnityEditor.Undo.RecordObject(this, "Assigned NetworkClient authenticator");
             // automatically assign NetworkClient field if we add this to NetworkClient
-            NetworkClient client = GetComponent<NetworkClient>();
-            if (client != null && client.authenticator == null)
+            Client = GetComponent<NetworkClient>();
+            if (Client != null && Client.authenticator == null)
             {
-                client.authenticator = this;
+                Client.authenticator = this;
             }
 
-            NetworkServer server = GetComponent<NetworkServer>();
-            if (server != null && server.authenticator == null)
+            Server = GetComponent<NetworkServer>();
+            if (Server != null && Server.authenticator == null)
             {
-                server.authenticator = this;
+                Server.authenticator = this;
             }
         }
 #endif

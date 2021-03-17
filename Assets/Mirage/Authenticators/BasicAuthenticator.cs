@@ -1,6 +1,6 @@
 using System.Collections;
-using UnityEngine;
 using Mirage.Logging;
+using UnityEngine;
 
 namespace Mirage.Authenticators
 {
@@ -30,12 +30,12 @@ namespace Mirage.Authenticators
         public override void OnServerAuthenticate(INetworkPlayer player)
         {
             // wait for AuthRequestMessage from client
-            player.RegisterHandler<AuthRequestMessage>(OnAuthRequestMessage);
+            Server.MessageHandler.RegisterHandler<AuthRequestMessage>(OnAuthRequestMessage);
         }
 
         public override void OnClientAuthenticate(INetworkPlayer player)
         {
-            player.RegisterHandler<AuthResponseMessage>(OnAuthResponseMessage);
+            Server.MessageHandler.RegisterHandler<AuthResponseMessage>(OnAuthResponseMessage);
 
             var authRequestMessage = new AuthRequestMessage
             {
