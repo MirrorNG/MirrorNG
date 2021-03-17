@@ -96,11 +96,11 @@ namespace Mirage
     /// A connection to a remote endpoint.
     /// May be from the server to client or from client to server
     /// </summary>
-    public interface INetworkPlayer : IMessageSender, IVisibilityTracker, IObjectOwner, IAuthenticatedObject, ISceneLoader
+    public interface INetworkPlayer : IVisibilityTracker, IObjectOwner, IAuthenticatedObject, ISceneLoader
     {
         IConnection Connection { get; }
 
-        IMessageHandler messageHandler { get; }
+        IMessageHandler MessageHandler { get; }
         void Send<T>(T message, int channelId = 0);
         void Send(ArraySegment<byte> segment, int channelId = 0);
     }
