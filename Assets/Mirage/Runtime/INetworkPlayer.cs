@@ -8,9 +8,9 @@ namespace Mirage
     /// </summary>
     public interface IMessageSender
     {
-        void Send<T>(T message, int channelId = Channel.Reliable);
+        void Send<T>(INetworkPlayer player, T message, int channelId = Channel.Reliable);
 
-        void Send(ArraySegment<byte> segment, int channelId = Channel.Reliable);
+        void Send(INetworkPlayer player, ArraySegment<byte> segment, int channelId = Channel.Reliable);
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ namespace Mirage
         /// ProcessMessages loop, should loop unitil object is closed
         /// </summary>
         /// <returns></returns>
-        UniTask ProcessMessagesAsync();
+        UniTask ProcessMessagesAsync(INetworkPlayer player);
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ namespace Mirage
         /// <typeparam name="T">type of message to send</typeparam>
         /// <param name="message">message to send</param>
         /// <param name="token">a arbitrary object that the sender will receive with their notification</param>
-        void SendNotify<T>(T message, object token, int channelId = Channel.Unreliable);
+        void SendNotify<T>(INetworkPlayer player, T message, object token, int channelId = Channel.Unreliable);
     }
 
     /// <summary>
